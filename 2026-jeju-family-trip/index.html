@@ -183,6 +183,16 @@ input, textarea, select{
   flex-wrap: wrap;
 }
 
+.filter-checkboxes {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
 footer{
   text-align:center;
   padding:30px;
@@ -259,9 +269,13 @@ footer{
     
     <!-- 지도 필터 컨트롤 바 -->
     <div class="filter-bar">
-      <strong>🗺 지도 보기 필터:</strong>
-      <label><input type="checkbox" id="chkShowAll" checked onchange="toggleShowAll(this.checked)"> 전체 항상 표시 (숙소, 맛집, 카페)</label>
-      <select id="selectDayFilter" onchange="renderMap()" style="padding:6px; border-radius:6px; width:auto;">
+      <strong>🗺 지도 필터:</strong>
+      <div class="filter-checkboxes">
+        <label><input type="checkbox" id="chkShowHotel" checked onchange="renderMap()"> 🏠 숙소</label>
+        <label><input type="checkbox" id="chkShowRestaurant" checked onchange="renderMap()"> 🍜 맛집</label>
+        <label><input type="checkbox" id="chkShowCafe" checked onchange="renderMap()"> ☕ 카페</label>
+      </div>
+      <select id="selectDayFilter" onchange="renderMap()" style="padding:6px; border-radius:6px; width:auto; margin:0;">
         <option value="all">📅 전체 일정 동선 보기</option>
       </select>
     </div>
@@ -321,8 +335,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V6<br>
-  주소 검색 및 동선 필터링 지원
+  제주 가족여행 Premium Planner V7<br>
+  숙소, 맛집, 카페 개별 지도 필터 지원
 </footer>
 
 <script>
@@ -365,7 +379,7 @@ function guessCoords(text) {
 }
 
 // --- 초기 데이터 구조 ---
-let tripData = JSON.parse(localStorage.getItem("jejuTripDataV6")) || {
+let tripData = JSON.parse(localStorage.getItem("jejuTripDataV7")) || {
   title: "🏝 제주 가족여행 Planner",
   sub: "소소한 하루 (구좌읍) | 12/25 ~ 12/28",
   arrival: "12/25 12:00",
@@ -454,7 +468,7 @@ let tripData = JSON.parse(localStorage.getItem("jejuTripDataV6")) || {
 };
 
 function saveAll() {
-  localStorage.setItem("jejuTripDataV6", JSON.stringify(tripData));
+  localStorage.setItem("jejuTripDataV7", JSON.stringify(tripData));
   renderAll();
 }
 
@@ -469,13 +483,15 @@ function renderMap() {
   currentLayers.forEach(layer => map.removeLayer(layer));
   currentLayers = [];
 
-  const showAll = document.getElementById("chkShowAll").checked;
+  const showHotel = document.getElementById("chkShowHotel").checked;
+  const showRestaurant = document.getElementById("chkShowRestaurant").checked;
+  const showCafe = document.getElementById("chkShowCafe").checked;
   const dayFilter = document.getElementById("selectDayFilter").value;
   const quickLinksEl = document.getElementById("quickLinks");
   quickLinksEl.innerHTML = "";
 
-  // 1. 전체 보기일 때 숙소 표시
-  if (showAll) {
+  // 1. 숙소 표시 필터
+  if (showHotel) {
     tripData.hotels.forEach(h => {
       if(!h.lat || !h.lng) return;
       const markerHtml = `<div style="background:#0284c7;color:white;padding:5px 8px;border-radius:20px;font-weight:bold;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;">🏠 ${h.name} (${h.nights})</div>`;
@@ -491,8 +507,10 @@ function renderMap() {
       btn.innerText = `🏠 ${h.name}`;
       quickLinksEl.appendChild(btn);
     });
+  }
 
-    // 맛집 표시
+  // 2. 맛집 표시 필터
+  if (showRestaurant) {
     tripData.restaurants.forEach(r => {
       if(!r.lat || !r.lng) return;
       const markerHtml = `<div style="background:#f97316;color:white;padding:3px 6px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">🍜 ${r.name}</div>`;
@@ -500,8 +518,10 @@ function renderMap() {
       const marker = L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(`<b>[맛집] ${r.name}</b><br>주소: ${r.address || '정보 없음'}`);
       currentLayers.push(marker);
     });
+  }
 
-    // 카페 표시
+  // 3. 카페 표시 필터
+  if (showCafe) {
     tripData.cafes.forEach(c => {
       if(!c.lat || !c.lng) return;
       const markerHtml = `<div style="background:#8b5cf6;color:white;padding:3px 6px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">☕ ${c.name}</div>`;
@@ -511,11 +531,10 @@ function renderMap() {
     });
   }
 
-  // 2. 일정 동선 및 체크된 항목 표시 (날짜별 필터링 연동)
+  // 4. 일정 동선 및 체크된 항목 표시 (날짜별 필터링 연동)
   let routeCoords = [];
   
   tripData.days.forEach((day, dIdx) => {
-    // 날짜 필터가 선택되어 있고, 해당 날짜가 아니면 스킵
     if (dayFilter !== "all" && dayFilter != dIdx) return;
 
     day.items.forEach(item => {
@@ -533,10 +552,6 @@ function renderMap() {
     const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 4, dashArray: '5, 5' }).addTo(map);
     currentLayers.push(polyline);
   }
-}
-
-function toggleShowAll(val) {
-  renderMap();
 }
 
 // --- 전체 화면 렌더링 함수 ---
