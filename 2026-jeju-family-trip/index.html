@@ -163,7 +163,6 @@ input, textarea, select{
   font-size: 14px;
 }
 
-/* 모바일 친화적 입력 필드 */
 .item input[type="text"] {
   font-size: 13px;
   padding: 6px 8px;
@@ -217,6 +216,36 @@ input, textarea, select{
   border: 1px solid #bae6fd;
 }
 
+/* 실시간 동기화 상태 표시 배너 */
+.sync-status {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: #10b981;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
 footer{
   text-align:center;
   padding:20px;
@@ -239,6 +268,10 @@ footer{
 </style>
 </head>
 <body>
+
+<div class="sync-status">
+  <div class="sync-dot"></div> Firebase 실시간 동기화 중
+</div>
 
 <header>
   <h1 id="headerTitle">🏝 제주 가족여행 Planner</h1>
@@ -299,7 +332,6 @@ footer{
       <span style="font-size:11px; font-weight:normal; color:#666;">(🏠숙소 / 🍜맛집 / ☕카페 / 📍일정)</span>
     </h2>
     
-    <!-- 지도 필터 컨트롤 바 -->
     <div class="filter-bar">
       <strong>🗺 지도 필터:</strong>
       <div class="filter-checkboxes">
@@ -367,12 +399,29 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V8<br>
-  모바일 최적화 및 사용자 친화적 UI 개선
+  제주 가족여행 Premium Planner V9 (Firebase 실시간 연동)<br>
+  PC와 모바일 완벽 동기화 지원
 </footer>
 
-<script>
-// --- 기본 좌표 매핑 (자주 쓰는 제주 명소 기본 좌표 사전) ---
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDz3WFoqAGiRr9uN6PLrwU6a5tphA-cywY",
+  authDomain: "jeju-family-trip-35d9c.firebaseapp.com",
+  projectId: "jeju-family-trip-35d9c",
+  storageBucket: "jeju-family-trip-35d9c.firebasestorage.app",
+  messagingSenderId: "195998414148",
+  appId: "1:195998414148:web:c05765eef2270eb8cd1311",
+  measurementId: "G-TZ9QK72D58"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const tripDocRef = doc(db, "trips", "jeju2026");
+
+// --- 기본 좌표 매핑 ---
 const presetCoords = {
   "제주공항": { lat: 33.5066, lng: 126.4931 },
   "함덕해수욕장": { lat: 33.5432, lng: 126.6695 },
@@ -408,7 +457,6 @@ function guessCoords(text) {
   return { lat: 33.4996, lng: 126.5312 };
 }
 
-// --- 스마트 데이터 로딩 (사용자가 웹에서 변경한 localStorage 내용 우선 유지, 푸시 시 기본값 덮어쓰기 방지) ---
 const defaultTripData = {
   title: "🏝 제주 가족여행 Planner",
   sub: "소소한 하루 (구좌읍) | 12/25 ~ 12/28",
@@ -497,17 +545,7 @@ const defaultTripData = {
   ]
 };
 
-// 로컬스토리지에 데이터가 없거나, 버전이 다르면 합쳐서 보존
-let tripData = JSON.parse(localStorage.getItem("jejuTripDataV8"));
-if (!tripData) {
-  tripData = defaultTripData;
-  localStorage.setItem("jejuTripDataV8", JSON.stringify(tripData));
-}
-
-function saveAll() {
-  localStorage.setItem("jejuTripDataV8", JSON.stringify(tripData));
-  renderAll();
-}
+let tripData = defaultTripData;
 
 // --- 지도 초기화 ---
 const map = L.map("map").setView([33.47, 126.82], 10);
@@ -639,8 +677,8 @@ function renderAll() {
         <div class="day">
           <span>📅 <input type="text" value="${day.date}" onchange="updateDayDate(${dIdx}, this.value)" style="display:inline-block; width:180px; font-size:15px; margin:0; padding:4px;"></span>
           <div>
-            <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="addDayItem(${dIdx})">+ 일정</button>
-            <button class="btn btn-danger" style="font-size:11px; padding:3px 6px;" onclick="removeDaySection(${dIdx})">날짜삭제</button>
+            <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="window.addDayItem(${dIdx})">+ 일정</button>
+            <button class="btn btn-danger" style="font-size:11px; padding:3px 6px;" onclick="window.removeDaySection(${dIdx})">날짜삭제</button>
           </div>
         </div>
         <div style="padding-left:5px;">${itemsHtml}</div>
@@ -656,7 +694,7 @@ function renderAll() {
         <span style="font-size:14px;">❤️</span>
         <input type="text" value="${r.name}" onchange="updatePlace('restaurant', ${idx}, 'name', this.value)" placeholder="맛집 이름" style="margin:0; flex:1; padding:5px; font-size:12px;">
         <input type="text" value="${r.address || ''}" onchange="updatePlace('restaurant', ${idx}, 'address', this.value)" placeholder="주소" style="margin:0; flex:1; padding:5px; font-size:12px;">
-        <button class="btn btn-danger" onclick="removePlace('restaurant', ${idx})">삭제</button>
+        <button class="btn btn-danger" onclick="window.removePlace('restaurant', ${idx})">삭제</button>
       </div>
     `;
   });
@@ -669,7 +707,7 @@ function renderAll() {
         <span style="font-size:14px;">☕</span>
         <input type="text" value="${c.name}" onchange="updatePlace('cafe', ${idx}, 'name', this.value)" placeholder="카페 이름" style="margin:0; flex:1; padding:5px; font-size:12px;">
         <input type="text" value="${c.address || ''}" onchange="updatePlace('cafe', ${idx}, 'address', this.value)" placeholder="주소" style="margin:0; flex:1; padding:5px; font-size:12px;">
-        <button class="btn btn-danger" onclick="removePlace('cafe', ${idx})">삭제</button>
+        <button class="btn btn-danger" onclick="window.removePlace('cafe', ${idx})">삭제</button>
       </div>
     `;
   });
@@ -681,7 +719,7 @@ function renderAll() {
       <div class="flex-row" style="margin-bottom:6px;">
         <input type="text" value="${ex.name}" onchange="updateExpenseName(${idx}, this.value)" style="margin:0; width:38%; padding:5px; font-size:13px;">
         <input type="number" value="${ex.cost}" onchange="updateExpenseCost(${idx}, this.value)" style="margin:0; width:45%; padding:5px; font-size:13px;">
-        <button class="btn btn-danger" onclick="removeExpense(${idx})">삭제</button>
+        <button class="btn btn-danger" onclick="window.removeExpense(${idx})">삭제</button>
       </div>
     `;
   });
@@ -694,7 +732,7 @@ function renderAll() {
       <div class="flex-row" style="background:#f8fafc; padding:6px; border-radius:6px;">
         <input type="checkbox" ${chk.checked ? "checked" : ""} onchange="toggleCheckItem(${idx})" style="width:16px; height:16px; margin:0;">
         <input type="text" value="${chk.name}" onchange="updateCheckItemName(${idx}, this.value)" style="margin:0; padding:3px; border:none; background:transparent; font-size:13px; flex:1;">
-        <button class="btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="removeCheckItem(${idx})">삭제</button>
+        <button class="btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="window.removeCheckItem(${idx})">삭제</button>
       </div>
     `;
   });
@@ -705,7 +743,7 @@ function renderAll() {
     memoContainer.innerHTML += `
       <div class="memo-item">
         <textarea onchange="updateMemoText(${idx}, this.value)" style="margin:0; border:none; background:transparent; resize:vertical; font-family:inherit; font-size:13px; padding:2px;">${m.text}</textarea>
-        <button class="btn btn-danger" onclick="removeMemo(${idx})">삭제</button>
+        <button class="btn btn-danger" onclick="window.removeMemo(${idx})">삭제</button>
       </div>
     `;
   });
@@ -713,21 +751,32 @@ function renderAll() {
   renderMap();
 }
 
-function toggleEditHeader() {
+// --- Firebase 실시간 동기화 저장 함수 ---
+async function saveAll() {
+  try {
+    await setDoc(tripDocRef, tripData);
+  } catch(e) {
+    console.error("Firebase 저장 실패: ", e);
+  }
+}
+
+// --- 이벤트 및 글로벌 함수 등록 ---
+window.toggleEditHeader = function() {
   const box = document.getElementById("editHeaderBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
-}
-function saveHeader() {
+};
+
+window.saveHeader = function() {
   tripData.title = document.getElementById("inputTitle").value;
   tripData.sub = document.getElementById("inputSub").value;
   saveAll();
-  toggleEditHeader();
-}
+  window.toggleEditHeader();
+};
 
-function toggleEditInfo() {
+window.toggleEditInfo = function() {
   const box = document.getElementById("infoEditBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
-}
+};
 
 function renderHotelEditList() {
   const container = document.getElementById("hotelListEdit");
@@ -738,18 +787,18 @@ function renderHotelEditList() {
         <input type="text" placeholder="숙소명" value="${h.name}" onchange="updateHotel(${idx}, 'name', this.value)" style="margin:0; flex:1; min-width:100px; padding:5px; font-size:12px;">
         <input type="text" placeholder="기간" value="${h.nights}" onchange="updateHotel(${idx}, 'nights', this.value)" style="margin:0; width:60px; padding:5px; font-size:12px;">
         <input type="text" placeholder="주소" value="${h.address || ''}" onchange="updateHotelAddress(${idx}, this.value)" style="margin:0; flex:1.2; min-width:110px; padding:5px; font-size:12px;">
-        <button class="btn btn-danger" onclick="removeHotel(${idx})">삭제</button>
+        <button class="btn btn-danger" onclick="window.removeHotel(${idx})">삭제</button>
       </div>
     `;
   });
 }
 
-function addHotelInput() {
+window.addHotelInput = function() {
   tripData.hotels.push({ name: "새 숙소", nights: "1박", address: "제주시", lat: 33.5, lng: 126.5 });
   renderHotelEditList();
-}
+};
 
-function updateHotel(idx, field, val) {
+window.updateHotel = function(idx, field, val) {
   tripData.hotels[idx][field] = val;
   if(field === 'name') {
     const coords = guessCoords(val);
@@ -757,75 +806,75 @@ function updateHotel(idx, field, val) {
     tripData.hotels[idx].lng = coords.lng;
   }
   saveAll();
-}
+};
 
-function updateHotelAddress(idx, val) {
+window.updateHotelAddress = function(idx, val) {
   tripData.hotels[idx].address = val;
   const coords = guessCoords(val + ' ' + tripData.hotels[idx].name);
   tripData.hotels[idx].lat = coords.lat;
   tripData.hotels[idx].lng = coords.lng;
   saveAll();
-}
+};
 
-function removeHotel(idx) {
+window.removeHotel = function(idx) {
   tripData.hotels.splice(idx, 1);
   renderHotelEditList();
-}
+};
 
-function saveInfo() {
+window.saveInfo = function() {
   tripData.arrival = document.getElementById("editArrival").value;
   tripData.departure = document.getElementById("editDeparture").value;
   tripData.people = document.getElementById("editPeople").value;
   saveAll();
-  toggleEditInfo();
-}
+  window.toggleEditInfo();
+};
 
-function addDaySection() {
+window.addDaySection = function() {
   tripData.days.push({ date: "새로운 날짜", items: [{ text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: false }] });
   saveAll();
-}
+};
 
-function removeDaySection(dIdx) {
+window.removeDaySection = function(dIdx) {
   if(confirm("정말 이 날짜 전체를 삭제하시겠습니까?")) {
     tripData.days.splice(dIdx, 1);
     saveAll();
   }
-}
+};
 
-function updateDayDate(dIdx, val) {
+window.updateDayDate = function(dIdx, val) {
   tripData.days[dIdx].date = val;
   saveAll();
-}
+};
 
-function addDayItem(dIdx) {
+window.addDayItem = function(dIdx) {
   tripData.days[dIdx].items.push({ text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: false });
   saveAll();
-}
+};
 
-function removeDayItem(dIdx, iIdx) {
+window.removeDayItem = function(dIdx, iIdx) {
   tripData.days[dIdx].items.splice(iIdx, 1);
   saveAll();
-}
+};
 
-function updateItemText(dIdx, iIdx, val) {
+window.updateItemText = function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].text = val;
   saveAll();
-}
+};
 
-function updateItemAddress(dIdx, iIdx, val) {
+window.updateItemAddress = function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].address = val;
   const coords = guessCoords(val + ' ' + tripData.days[dIdx].items[iIdx].text);
   tripData.days[dIdx].items[iIdx].lat = coords.lat;
   tripData.days[dIdx].items[iIdx].lng = coords.lng;
   saveAll();
-}
+};
 
-function toggleItemCheck(dIdx, iIdx) {
+window.toggleItemCheck = function(dIdx, iIdx) {
   tripData.days[dIdx].items[iIdx].checked = !tripData.days[dIdx].items[iIdx].checked;
   saveAll();
-}
+};
 
-function addPlaceItem(type) {
+window.addPlaceItem = function(type) {
   const name = prompt(type === 'restaurant' ? "추가할 맛집 이름" : "추가할 카페 이름");
   if(!name) return;
   const coords = guessCoords(name);
@@ -835,9 +884,9 @@ function addPlaceItem(type) {
     tripData.cafes.push({ name, address: name, lat: coords.lat, lng: coords.lng });
   }
   saveAll();
-}
+};
 
-function updatePlace(type, idx, field, val) {
+window.updatePlace = function(type, idx, field, val) {
   const list = type === 'restaurant' ? tripData.restaurants : tripData.cafes;
   list[idx][field] = val;
   if(field === 'name' || field === 'address') {
@@ -846,84 +895,100 @@ function updatePlace(type, idx, field, val) {
     list[idx].lng = coords.lng;
   }
   saveAll();
-}
+};
 
-function removePlace(type, idx) {
+window.removePlace = function(type, idx) {
   if(type === 'restaurant') tripData.restaurants.splice(idx, 1);
   else tripData.cafes.splice(idx, 1);
   saveAll();
-}
+};
 
-function addExpenseItem() {
+window.addExpenseItem = function() {
   tripData.expenses.push({ name: "새 항목", cost: 0 });
   saveAll();
-}
+};
 
-function updateExpenseName(idx, val) {
+window.updateExpenseName = function(idx, val) {
   tripData.expenses[idx].name = val;
   saveAll();
-}
+};
 
-function updateExpenseCost(idx, val) {
+window.updateExpenseCost = function(idx, val) {
   tripData.expenses[idx].cost = Number(val);
   calc();
   saveAll();
-}
+};
 
-function removeExpense(idx) {
+window.removeExpense = function(idx) {
   tripData.expenses.splice(idx, 1);
   saveAll();
-}
+};
 
-function calc() {
+window.calc = function() {
   let total = 0;
   tripData.expenses.forEach(ex => {
     total += Number(ex.cost || 0);
   });
   document.getElementById("result").innerText = "예상 총 경비 : " + total.toLocaleString() + "원";
-}
+};
 
-pendCheckItem = function() {}; // placeholder
-function addCheckItem() {
+window.addCheckItem = function() {
   const nameInput = document.getElementById("newCheckItemName");
   if(!nameInput.value) return;
   tripData.checklist.push({ name: nameInput.value, checked: false });
   nameInput.value = "";
   saveAll();
-}
+};
 
-function toggleCheckItem(idx) {
+window.toggleCheckItem = function(idx) {
   tripData.checklist[idx].checked = !tripData.checklist[idx].checked;
   saveAll();
-}
+};
 
-function updateCheckItemName(idx, val) {
+window.updateCheckItemName = function(idx, val) {
   tripData.checklist[idx].name = val;
   saveAll();
-}
+};
 
-function removeCheckItem(idx) {
+window.removeCheckItem = function(idx) {
   tripData.checklist.splice(idx, 1);
   saveAll();
-}
+};
 
-function addMemoItem() {
+window.addMemoItem = function() {
   tripData.memos.push({ text: "새로운 메모 내용을 입력하세요." });
   saveAll();
-}
+};
 
-function updateMemoText(idx, val) {
+window.updateMemoText = function(idx, val) {
   tripData.memos[idx].text = val;
   saveAll();
-}
+};
 
-function removeMemo(idx) {
+window.removeMemo = function(idx) {
   tripData.memos.splice(idx, 1);
   saveAll();
-}
+};
 
-// 최초 실행
-renderAll();
+window.toggleShowAll = function() {
+  renderMap();
+};
+
+// --- Firebase 실시간 리스너 연결 (모바일/PC 양방향 실시간 동기화) ---
+onSnapshot(tripDocRef, async (snapshot) => {
+  if (snapshot.exists()) {
+    tripData = snapshot.data();
+    renderAll();
+  } else {
+    // 최초 데이터가 없을 경우 기본 데이터 업로드
+    await setDoc(tripDocRef, defaultTripData);
+    tripData = defaultTripData;
+    renderAll();
+  }
+}, (error) => {
+  console.error("Firebase 실시간 수신 오류: ", error);
+});
+
 </script>
 
 </body>
