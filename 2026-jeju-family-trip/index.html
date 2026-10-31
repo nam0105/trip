@@ -1,1 +1,1204 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jeju Family Trip V3</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><style>body{font-family:Arial,sans-serif;background:#f5f7fb;margin:0}.header{background:#0ea5e9;color:#fff;padding:20px;text-align:center}.card{background:#fff;margin:12px;padding:16px;border-radius:12px}.row{display:flex;gap:8px;flex-wrap:wrap}input,textarea{width:100%;padding:8px;margin:4px 0}button{background:#0ea5e9;color:#fff;border:0;padding:8px 12px;border-radius:8px}#map{height:350px}.item{border-bottom:1px solid #eee;padding:8px}</style></head><body><div class="header"><h1>🏝 제주 가족여행 플래너 V3</h1><p>Firebase 실시간 동기화</p></div><div class="card"><h2>일정 추가</h2><input id="time" placeholder="09:30"><input id="title" placeholder="일정"><textarea id="memo" placeholder="메모"></textarea><button id="addBtn">추가</button><div id="list"></div></div><div class="card"><h2>가족 메모</h2><textarea id="familyMemo"></textarea><button id="saveMemo">저장</button></div><div class="card"><h2>예산</h2><input id="budget" type="number" placeholder="총 예산"><input id="spent" type="number" placeholder="사용 금액"><button id="saveBudget">저장</button><div id="remain"></div></div><div class="card"><h2>지도</h2><div id="map"></div></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script type="module">import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';import {getFirestore,collection,addDoc,deleteDoc,doc,onSnapshot,setDoc} from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';const firebaseConfig={apiKey:'AIzaSyDz3WFoqAGiRr9uN6PLrwU6a5tphA-cywY',authDomain:'jeju-family-trip-35d9c.firebaseapp.com',projectId:'jeju-family-trip-35d9c',storageBucket:'jeju-family-trip-35d9c.firebasestorage.app',messagingSenderId:'195998414148',appId:'1:195998414148:web:c05765eef2270eb8cd1311',measurementId:'G-TZ9QK72D58'};const app=initializeApp(firebaseConfig);const db=getFirestore(app);const ref=collection(db,'schedules');const list=document.getElementById('list');document.getElementById('addBtn').onclick=async()=>{await addDoc(ref,{time:time.value,title:title.value,memo:memo.value})};onSnapshot(ref,s=>{list.innerHTML='';s.forEach(d=>{const v=d.data();list.innerHTML+=`<div class=item><b>${v.time}</b> ${v.title}<br>${v.memo}<button onclick="window.delItem('${d.id}')">삭제</button></div>`})});window.delItem=async(id)=>{await deleteDoc(doc(db,'schedules',id))};const memoRef=doc(db,'settings','memo');saveMemo.onclick=()=>setDoc(memoRef,{text:familyMemo.value});onSnapshot(memoRef,s=>{if(s.exists())familyMemo.value=s.data().text||''});const budgetRef=doc(db,'settings','budget');saveBudget.onclick=()=>setDoc(budgetRef,{budget:+budget.value,spent:+spent.value});onSnapshot(budgetRef,s=>{if(s.exists()){const d=s.data();budget.value=d.budget;spent.value=d.spent;remain.innerText='남은 예산: '+((d.budget||0)-(d.spent||0)).toLocaleString()+'원';}});const map=L.map('map').setView([33.47,126.82],10);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);[['비자림',33.491,126.809],['4.3평화공원',33.448,126.651],['국립제주박물관',33.513,126.548],['아쿠아플라넷',33.433,126.927]].forEach(p=>L.marker([p[1],p[2]]).addTo(map).bindPopup(p[0]));</script></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🏝 제주 가족여행 Planner V4</title>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+
+:root{
+--main:#0ea5e9;
+--sub:#0284c7;
+--bg:#f8fafc;
+--card:#ffffff;
+}
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+font-family:'Malgun Gothic',sans-serif;
+background:var(--bg);
+color:#333;
+}
+
+header{
+background:linear-gradient(135deg,#0ea5e9,#0284c7);
+color:white;
+padding:30px;
+text-align:center;
+}
+
+header h1{
+margin:0;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:15px;
+}
+
+.card{
+background:white;
+border-radius:16px;
+padding:20px;
+margin-bottom:15px;
+box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+
+h2{
+color:#0369a1;
+margin-top:0;
+}
+
+.info-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:10px;
+}
+
+.info-box{
+background:#f1f5f9;
+padding:15px;
+border-radius:12px;
+text-align:center;
+}
+
+.timeline{
+border-left:4px solid var(--main);
+padding-left:20px;
+}
+
+.day{
+font-size:20px;
+font-weight:bold;
+margin:20px 0;
+color:#0284c7;
+}
+
+.item{
+padding:6px 0;
+}
+
+#map{
+height:500px;
+border-radius:12px;
+}
+
+.btn{
+display:inline-block;
+padding:10px 15px;
+background:#0ea5e9;
+color:white;
+text-decoration:none;
+border-radius:10px;
+margin:5px;
+}
+
+.btn:hover{
+background:#0284c7;
+}
+
+input,
+textarea{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+margin-top:6px;
+margin-bottom:8px;
+}
+
+button{
+background:#0ea5e9;
+color:white;
+border:none;
+border-radius:8px;
+padding:10px 14px;
+cursor:pointer;
+}
+
+.total{
+font-size:24px;
+font-weight:bold;
+color:#0284c7;
+margin-top:10px;
+}
+
+.weather{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.weather-box{
+flex:1;
+background:#f8fafc;
+padding:15px;
+border-radius:12px;
+min-width:250px;
+}
+
+.firebase-item{
+background:#f8fafc;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+}
+
+.progress-box{
+font-size:22px;
+font-weight:bold;
+color:#0284c7;
+margin-top:15px;
+}
+
+footer{
+text-align:center;
+padding:30px;
+color:#666;
+}
+
+@media(max-width:768px){
+
+#map{
+height:350px;
+}
+
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+
+<h1>🏝 제주 가족여행 Planner V4</h1>
+
+<p>
+소소한 하루 (구좌읍)
+<br>
+12/25 ~ 12/28
+</p>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>✈ 여행 정보</h2>
+
+<div class="info-grid">
+
+<div class="info-box">
+<strong>도착</strong><br>
+12/25 12:00
+</div>
+
+<div class="info-box">
+<strong>출발</strong><br>
+12/28 16:00
+</div>
+
+<div class="info-box">
+<strong>숙소</strong><br>
+소소한 하루
+</div>
+
+<div class="info-box">
+<strong>인원</strong><br>
+4명
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>🗺 여행 지도</h2>
+
+<div id="map"></div>
+
+<br>
+
+<a
+target="_blank"
+class="btn"
+href="https://maps.google.com/?q=비자림">
+비자림
+</a>
+
+<a
+target="_blank"
+class="btn"
+href="https://maps.google.com/?q=제주4.3평화공원">
+4.3 평화공원
+</a>
+
+<a
+target="_blank"
+class="btn"
+href="https://maps.google.com/?q=국립제주박물관">
+제주박물관
+</a>
+
+<a
+target="_blank"
+class="btn"
+href="https://maps.google.com/?q=아쿠아플라넷 제주">
+아쿠아플라넷
+</a>
+
+</div>
+
+  <div class="card">
+
+<h2>📅 여행 일정</h2>
+
+<div class="timeline">
+
+<div class="day">12/25 (도착일)</div>
+
+<div class="item">13:00 렌터카 수령</div>
+<div class="item">14:00 함덕 점심</div>
+<div class="item">15:30 비자림</div>
+<div class="item">17:00 세화해변</div>
+<div class="item">18:00 월정리 카페거리</div>
+
+<hr>
+
+<div class="day">12/26 (역사 · 교육 Day)</div>
+
+<div class="item">09:30 제주4.3평화공원</div>
+<div class="item">12:30 점심</div>
+<div class="item">14:00 국립제주박물관</div>
+<div class="item">16:30 사라봉 전망대</div>
+<div class="item">17:20 용담해안도로 노을</div>
+
+<hr>
+
+<div class="day">12/27 (가족 체험 Day)</div>
+
+<div class="item">09:30 아쿠아플라넷 제주</div>
+<div class="item">13:00 성산 점심</div>
+<div class="item">14:00 섭지코지</div>
+<div class="item">16:00 광치기해변</div>
+<div class="item">17:30 성산 카페</div>
+
+<hr>
+
+<div class="day">12/28 (귀가일)</div>
+
+<div class="item">09:30 함덕해수욕장</div>
+<div class="item">11:30 점심</div>
+<div class="item">13:00 도두봉</div>
+<div class="item">14:20 렌터카 반납</div>
+<div class="item">16:00 김포행 출발</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>🍜 추천 맛집</h2>
+
+<ul>
+
+<li>
+❤️ 맛나식당 (성산)
+</li>
+
+<li>
+❤️ 해녀의집 (세화)
+</li>
+
+<li>
+❤️ 덤장 함덕점
+</li>
+
+<li>
+❤️ 성산 해녀짬뽕
+</li>
+
+<li>
+❤️ 전복마시문어마시
+</li>
+
+</ul>
+
+</div>
+
+<div class="card">
+
+<h2>☕ 추천 카페</h2>
+
+<ul>
+
+<li>
+☕ 카페 진정성 제주
+</li>
+
+<li>
+☕ 카페 공작소
+</li>
+
+<li>
+☕ 카페 코지
+</li>
+
+<li>
+☕ 월정리 해변카페
+</li>
+
+<li>
+☕ 오드랑베이커리
+</li>
+
+</ul>
+
+</div>
+
+<div class="card">
+
+<h2>☀️ 날씨별 플랜</h2>
+
+<div class="weather">
+
+<div class="weather-box">
+
+<h3>🌞 Plan A (맑은 날)</h3>
+
+비자림<br>
+세화해변<br>
+월정리<br>
+섭지코지<br>
+광치기해변<br>
+함덕해수욕장
+
+</div>
+
+<div class="weather-box">
+
+<h3>🌧 Plan B (비 또는 강풍)</h3>
+
+아쿠아플라넷<br>
+제주4.3평화공원<br>
+국립제주박물관<br>
+해녀박물관<br>
+제주민속자연사박물관
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>💰 여행경비 계산기</h2>
+
+<label>렌터카</label>
+<input
+id="car"
+type="number"
+value="260000">
+
+<label>숙소</label>
+<input
+id="hotel"
+type="number"
+value="350000">
+
+<label>식비</label>
+<input
+id="food"
+type="number"
+value="300000">
+
+<label>입장료</label>
+<input
+id="ticket"
+type="number"
+value="180000">
+
+<button onclick="calc()">
+총 경비 계산
+</button>
+
+<div
+class="total"
+id="result">
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>✅ 여행 준비 체크리스트</h2>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+패딩
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+장갑
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+충전기
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+보조배터리
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+아이 비상약
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+아이 간식
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+우비
+</div>
+
+<div class="check-item">
+<input type="checkbox" class="saveCheck">
+여벌옷
+</div>
+
+</div>
+<!-- ========================= -->
+<!-- Firebase 가족 협업 영역 -->
+<!-- ========================= -->
+
+<div class="card">
+
+<h2>👨‍👩‍👧‍👦 가족 공동 일정</h2>
+
+<p style="color:#666;">
+남편/아내가 함께 추가하고 수정할 수 있는 실시간 일정
+</p>
+
+<input
+id="scheduleTime"
+placeholder="예: 11:00">
+
+<input
+id="scheduleTitle"
+placeholder="예: 김녕미로공원">
+
+<textarea
+id="scheduleMemo"
+placeholder="메모 입력">
+</textarea>
+
+<button id="addBtn">
+➕ 일정 추가
+</button>
+
+<div id="scheduleList"></div>
+
+</div>
+
+<!-- ========================= -->
+<!-- 가족 메모장 -->
+<!-- ========================= -->
+
+<div class="card">
+
+<h2>📝 가족 메모장</h2>
+
+<p style="color:#666;">
+가족 모두가 함께 보는 공유 메모
+</p>
+
+<textarea
+id="familyMemo"
+style="height:180px;"
+placeholder="예: 해녀의집 예약 확인하기">
+</textarea>
+
+<button id="saveMemo">
+💾 메모 저장
+</button>
+
+</div>
+
+<!-- ========================= -->
+<!-- 여행 예산 공유 -->
+<!-- ========================= -->
+
+<div class="card">
+
+<h2>💳 가족 예산 관리</h2>
+
+<label>
+총 여행 예산
+</label>
+
+<input
+id="sharedBudget"
+type="number"
+placeholder="1500000">
+
+<label>
+현재 사용 금액
+</label>
+
+<input
+id="sharedSpent"
+type="number"
+placeholder="500000">
+
+<button id="saveBudget">
+💰 예산 저장
+</button>
+
+<div
+id="budgetResult"
+class="total">
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- 여행 진행률 -->
+<!-- ========================= -->
+
+<div class="card">
+
+<h2>🏁 여행 진행률</h2>
+
+<p style="color:#666;">
+방문한 장소를 체크하세요
+</p>
+
+<div id="visitArea">
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="비자림">
+비자림
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="세화해변">
+세화해변
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="월정리">
+월정리
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="제주4.3평화공원">
+4.3평화공원
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="국립제주박물관">
+국립제주박물관
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="아쿠아플라넷">
+아쿠아플라넷
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="섭지코지">
+섭지코지
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="광치기해변">
+광치기해변
+</label>
+
+<br><br>
+
+<label>
+<input
+type="checkbox"
+class="visitCheck"
+value="함덕해변">
+함덕해변
+</label>
+
+</div>
+
+<div
+id="progressText"
+class="progress-box">
+
+0%
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- 여행 메모 -->
+<!-- ========================= -->
+
+<div class="card">
+
+<h2>📌 여행 아이디어</h2>
+
+<ul>
+
+<li>
+아이들이 좋아할 장소:
+김녕미로공원
+</li>
+
+<li>
+일몰 추천:
+월정리 / 세화해변
+</li>
+
+<li>
+비 오는 날:
+해녀박물관 추가 추천
+</li>
+
+<li>
+공항 이동은
+13시 이전 시작 권장
+</li>
+
+</ul>
+
+</div>
+
+<footer>
+
+제주 가족여행 Premium Planner V4
+<br>
+Firebase 실시간 공유 지원
+
+</footer>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+deleteDoc,
+doc,
+setDoc,
+getDoc,
+onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+//////////////////////////////////////////////////
+// Firebase
+//////////////////////////////////////////////////
+
+const firebaseConfig = {
+ apiKey: "AIzaSyDz3WFoqAGiRr9uN6PLrwU6a5tphA-cywY",
+ authDomain: "jeju-family-trip-35d9c.firebaseapp.com",
+ projectId: "jeju-family-trip-35d9c",
+ storageBucket: "jeju-family-trip-35d9c.firebasestorage.app",
+ messagingSenderId: "195998414148",
+ appId: "1:195998414148:web:c05765eef2270eb8cd1311",
+ measurementId: "G-TZ9QK72D58"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+//////////////////////////////////////////////////
+// 지도
+//////////////////////////////////////////////////
+
+const map = L.map("map").setView([33.47,126.82],10);
+
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+maxZoom:19
+}
+).addTo(map);
+
+const places = [
+
+["소소한 하루",33.515,126.865],
+["비자림",33.491,126.809],
+["세화해변",33.525,126.860],
+["월정리",33.556,126.795],
+
+["제주4.3평화공원",33.448,126.651],
+["국립제주박물관",33.513,126.548],
+
+["아쿠아플라넷",33.433,126.927],
+["섭지코지",33.424,126.930],
+["광치기해변",33.452,126.924],
+
+["함덕해변",33.543,126.669],
+["도두봉",33.507,126.467]
+
+];
+
+places.forEach(place=>{
+
+L.marker([
+place[1],
+place[2]
+])
+.addTo(map)
+.bindPopup(place[0]);
+
+});
+
+//////////////////////////////////////////////////
+// 경비 계산
+//////////////////////////////////////////////////
+
+window.calc = function(){
+
+const total =
+Number(document.getElementById("car").value||0)+
+Number(document.getElementById("hotel").value||0)+
+Number(document.getElementById("food").value||0)+
+Number(document.getElementById("ticket").value||0);
+
+document.getElementById("result").innerText =
+"예상 총 경비 : " +
+total.toLocaleString() +
+"원";
+
+};
+
+//////////////////////////////////////////////////
+// 체크리스트 저장
+//////////////////////////////////////////////////
+
+const checks =
+document.querySelectorAll(".saveCheck");
+
+checks.forEach((check,index)=>{
+
+const key =
+"jejuCheck_" + index;
+
+const saved =
+localStorage.getItem(key);
+
+if(saved==="true"){
+check.checked=true;
+}
+
+check.addEventListener(
+"change",
+()=>{
+localStorage.setItem(
+key,
+check.checked
+);
+}
+);
+
+});
+
+//////////////////////////////////////////////////
+// 공동 일정
+//////////////////////////////////////////////////
+
+const scheduleCollection =
+collection(
+db,
+"familySchedules"
+);
+
+const scheduleList =
+document.getElementById(
+"scheduleList"
+);
+
+document
+.getElementById("addBtn")
+.addEventListener(
+"click",
+async()=>{
+
+const time =
+document.getElementById(
+"scheduleTime"
+).value;
+
+const title =
+document.getElementById(
+"scheduleTitle"
+).value;
+
+const memo =
+document.getElementById(
+"scheduleMemo"
+).value;
+
+if(!title){
+alert("일정 제목을 입력하세요.");
+return;
+}
+
+await addDoc(
+scheduleCollection,
+{
+time,
+title,
+memo,
+createdAt:Date.now()
+}
+);
+
+document.getElementById(
+"scheduleTime"
+).value="";
+
+document.getElementById(
+"scheduleTitle"
+).value="";
+
+document.getElementById(
+"scheduleMemo"
+).value="";
+
+}
+);
+
+window.deleteSchedule =
+async(id)=>{
+
+await deleteDoc(
+doc(
+db,
+"familySchedules",
+id
+)
+);
+
+};
+
+onSnapshot(
+scheduleCollection,
+(snapshot)=>{
+
+scheduleList.innerHTML="";
+
+snapshot.forEach(item=>{
+
+const data =
+item.data();
+
+scheduleList.innerHTML += `
+<div class="firebase-item">
+
+<b>${data.time || ""}</b>
+
+${data.title}
+
+<br>
+
+${data.memo || ""}
+
+<br><br>
+
+<button
+onclick="deleteSchedule('${item.id}')">
+삭제
+</button>
+
+</div>
+`;
+
+});
+
+}
+);
+
+//////////////////////////////////////////////////
+// 가족 메모
+//////////////////////////////////////////////////
+
+const familyMemoRef =
+doc(
+db,
+"planner",
+"familyMemo"
+);
+
+document
+.getElementById(
+"saveMemo"
+)
+.addEventListener(
+"click",
+async()=>{
+
+await setDoc(
+familyMemoRef,
+{
+text:document.getElementById(
+"familyMemo"
+).value
+}
+);
+
+alert("메모 저장 완료");
+
+}
+);
+
+onSnapshot(
+familyMemoRef,
+(snapshot)=>{
+
+if(snapshot.exists()){
+
+document.getElementById(
+"familyMemo"
+).value =
+snapshot.data().text || "";
+
+}
+
+}
+);
+
+//////////////////////////////////////////////////
+// 예산 관리
+//////////////////////////////////////////////////
+
+const budgetRef =
+doc(
+db,
+"planner",
+"budget"
+);
+
+document
+.getElementById(
+"saveBudget"
+)
+.addEventListener(
+"click",
+async()=>{
+
+const budget =
+Number(
+document.getElementById(
+"sharedBudget"
+).value || 0
+);
+
+const spent =
+Number(
+document.getElementById(
+"sharedSpent"
+).value || 0
+);
+
+await setDoc(
+budgetRef,
+{
+budget,
+spent
+}
+);
+
+}
+);
+
+onSnapshot(
+budgetRef,
+(snapshot)=>{
+
+if(!snapshot.exists())
+return;
+
+const data =
+snapshot.data();
+
+document.getElementById(
+"sharedBudget"
+).value =
+data.budget || 0;
+
+document.getElementById(
+"sharedSpent"
+).value =
+data.spent || 0;
+
+const remain =
+(data.budget||0) -
+(data.spent||0);
+
+document.getElementById(
+"budgetResult"
+).innerText =
+"남은 예산 : " +
+remain.toLocaleString()
++ "원";
+
+}
+);
+
+//////////////////////////////////////////////////
+// 여행 진행률
+//////////////////////////////////////////////////
+
+const visitChecks =
+document.querySelectorAll(
+".visitCheck"
+);
+
+function updateProgress(){
+
+let checkedCount = 0;
+
+visitChecks.forEach(item=>{
+
+if(item.checked)
+checkedCount++;
+
+});
+
+const percent =
+Math.round(
+(
+checkedCount /
+visitChecks.length
+) * 100
+);
+
+document.getElementById(
+"progressText"
+).innerText =
+percent + "% 완료";
+
+localStorage.setItem(
+"tripProgress",
+JSON.stringify(
+[...visitChecks].map(
+v=>v.checked
+)
+)
+);
+
+}
+
+const savedProgress =
+JSON.parse(
+localStorage.getItem(
+"tripProgress"
+)
+);
+
+if(savedProgress){
+
+visitChecks.forEach(
+(item,index)=>{
+
+if(savedProgress[index])
+item.checked=true;
+
+}
+);
+
+}
+
+visitChecks.forEach(item=>{
+
+item.addEventListener(
+"change",
+updateProgress
+);
+
+});
+
+updateProgress();
+
+//////////////////////////////////////////////////
+// 초기 계산
+//////////////////////////////////////////////////
+
+calc();
+
+</script>
+
+</div>
+
+</body>
+</html>
+  
