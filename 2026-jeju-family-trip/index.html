@@ -159,6 +159,13 @@ h2{
   background: #059669;
 }
 
+.btn-version {
+  background: #8b5cf6;
+}
+.btn-version:hover {
+  background: #7c3aed;
+}
+
 input, textarea, select{
   width:100%;
   padding:8px 10px;
@@ -321,7 +328,10 @@ footer{
 <header>
   <h1 id="headerTitle">🏝 제주 가족여행 Planner</h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
-  <button class="btn" style="margin-top:8px; font-size:12px; padding:4px 10px; background:rgba(255,255,255,0.25);" onclick="toggleEditHeader()">✏ 제목/설명 편집</button>
+  <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+    <button class="btn" style="font-size:12px; padding:4px 10px; background:rgba(255,255,255,0.25);" onclick="toggleEditHeader()">✏ 제목/설명 편집</button>
+    <button class="btn btn-version" style="font-size:12px; padding:4px 10px;" onclick="openVersionModal()">💾 버전(스냅샷) 관리</button>
+  </div>
 </header>
 
 <div class="container" id="editHeaderBox" style="display:none;">
@@ -332,6 +342,25 @@ footer{
     <label>여행 설명 (숙소 및 기간 등)</label>
     <input type="text" id="inputSub" value="소소한 하루 (구좌읍) | 12/25 ~ 12/28">
     <button class="btn" onclick="saveHeader()">저장하기</button>
+  </div>
+</div>
+
+<!-- 버전 관리 모달창 -->
+<div id="versionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+  <div class="card" style="width:90%; max-width:450px; background:white;">
+    <h2>💾 여행 계획 버전(스냅샷) 관리</h2>
+    <p style="color:#666; font-size:13px;">현재 계획 상태를 원하는 이름으로 저장하고, 나중에 해당 버전으로 불러올 수 있습니다.</p>
+    
+    <label>새 버전(이름) 입력</label>
+    <input type="text" id="newVersionName" placeholder="예: 크리스마스 버전, 1안 등">
+    <button class="btn btn-version" style="width:100%; margin-bottom:15px;" onclick="saveNewVersion()">현재 상태로 새 버전 저장</button>
+
+    <label>저장된 버전 목록</label>
+    <div id="versionListContainer" style="max-height:180px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:8px; margin-bottom:15px; background:#f8fafc;">
+      <!-- 버전 목록 -->
+    </div>
+
+    <button class="btn btn-danger" style="width:100%; font-size:13px;" onclick="closeVersionModal()">닫기</button>
   </div>
 </div>
 
@@ -445,13 +474,13 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V20<br>
-  숙소 정보 자동 연동 및 좌표 동기화 완벽 해결
+  제주 가족여행 Premium Planner V21<br>
+  커스텀 버전(스냅샷) 저장 및 불러오기 기능 추가
 </footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDz3WFoqAGiRr9uN6PLrwU6a5tphA-cywY",
@@ -466,6 +495,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tripDocRef = doc(db, "trips", "jeju2026");
+const versionsColRef = collection(db, "tripVersions");
 
 const VALID_KEYS = ["melang01"];
 
@@ -505,7 +535,7 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
   }
 });
 
-// --- 정밀 제주 지역별 좌표 사전 (숙소 정보와 완벽 동기화) ---
+// --- 정밀 제주 지역별 좌표 사전 ---
 const presetCoords = {
   "월정7길 28-14": { lat: 33.5545, lng: 126.7970 },
   "월정7길": { lat: 33.5545, lng: 126.7970 },
@@ -540,11 +570,9 @@ const presetCoords = {
   "중문": { lat: 33.2520, lng: 126.4240 }
 };
 
-// 입력된 주소/장소에서 키워드를 정밀 매칭하고 등록된 숙소와도 동기화
 function guessCoords(text, tripDataObj) {
   if (!text) return { lat: 33.5562, lng: 126.7958 };
   
-  // 1. 등록된 숙소 이름이나 주소에 포함되는지 확인 (최우선 동기화)
   if (tripDataObj && tripDataObj.hotels) {
     for (let h of tripDataObj.hotels) {
       if (text.includes(h.name) || (h.address && text.includes(h.address))) {
@@ -555,7 +583,6 @@ function guessCoords(text, tripDataObj) {
     }
   }
   
-  // 2. 프리셋 좌표 사전 매칭
   let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
   for (let key of sortedKeys) {
     if (text.includes(key)) {
@@ -744,6 +771,95 @@ window.renderMap = function() {
 
 window.applyMapFilter = function() {
   renderMap();
+};
+
+// --- 버전(스냅샷) 관리 함수들 ---
+window.openVersionModal = async function() {
+  document.getElementById("versionModal").style.display = "flex";
+  await loadVersionList();
+};
+
+window.closeVersionModal = function() {
+  document.getElementById("versionModal").style.display = "none";
+};
+
+async function loadVersionList() {
+  const container = document.getElementById("versionListContainer");
+  container.innerHTML = "불러오는 중...";
+  try {
+    const snapshot = await getDocs(versionsColRef);
+    container.innerHTML = "";
+    if (snapshot.empty) {
+      container.innerHTML = "<p style='font-size:12px; color:#666; text-align:center;'>저장된 버전이 없습니다.</p>";
+      return;
+    }
+    snapshot.forEach(docSnap => {
+      const vName = docSnap.id;
+      const vData = docSnap.data();
+      const dateStr = vData.createdAt ? new Date(vData.createdAt).toLocaleString() : "";
+      container.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:8px; border-radius:6px; margin-bottom:6px; border:1px solid #e2e8f0;">
+          <div>
+            <b>${vName}</b><br><span style="font-size:10px; color:#888;">${dateStr}</span>
+          </div>
+          <div style="display:flex; gap:5px;">
+            <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="loadVersion('${vName}')">불러오기</button>
+            <button class="btn-delete" onclick="deleteVersion('${vName}')">삭제</button>
+          </div>
+        </div>
+      `;
+    });
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = "버전 목록 로드 실패";
+  }
+}
+
+window.saveNewVersion = async function() {
+  const nameInput = document.getElementById("newVersionName");
+  const versionName = nameInput.value.trim();
+  if(!versionName) {
+    alert("저장할 버전 이름을 입력하세요.");
+    return;
+  }
+  try {
+    await setDoc(doc(db, "tripVersions", versionName), {
+      data: tripData,
+      createdAt: Date.now()
+    });
+    alert(`'${versionName}' 버전으로 저장되었습니다!`);
+    nameInput.value = "";
+    await loadVersionList();
+  } catch (e) {
+    alert("버전 저장 실패: " + e.message);
+  }
+};
+
+window.loadVersion = async function(versionName) {
+  if(!confirm(`'${versionName}' 버전의 계획으로 되돌리시겠습니까?`)) return;
+  try {
+    const docSnap = await getDoc(doc(db, "tripVersions", versionName));
+    if (docSnap.exists()) {
+      tripData = docSnap.data().data;
+      await saveAll(); // 메인에 반영
+      alert(`'${versionName}' 버전을 불러왔습니다!`);
+      window.closeVersionModal();
+    } else {
+      alert("해당 버전을 찾을 수 없습니다.");
+    }
+  } catch (e) {
+    alert("버전 불러오기 실패: " + e.message);
+  }
+};
+
+window.deleteVersion = async function(versionName) {
+  if(!confirm(`'${versionName}' 버전을 삭제하시겠습니까?`)) return;
+  try {
+    await deleteDoc(doc(db, "tripVersions", versionName));
+    await loadVersionList();
+  } catch (e) {
+    alert("버전 삭제 실패: " + e.message);
+  }
 };
 
 // --- 전체 화면 렌더링 함수 ---
@@ -1021,7 +1137,7 @@ window.updatePlace = function(type, idx, field, val) {
   const list = type === 'restaurant' ? tripData.restaurants : tripData.cafes;
   list[idx][field] = val;
   if(field === 'name' || field === 'address') {
-    const coords =guessCoords(list[idx].name + ' ' + (list[idx].address || ''), tripData);
+    const coords = guessCoords(list[idx].name + ' ' + (list[idx].address || ''), tripData);
     list[idx].lat = coords.lat;
     list[idx].lng = coords.lng;
   }
