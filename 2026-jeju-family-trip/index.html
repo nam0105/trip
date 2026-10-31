@@ -30,32 +30,39 @@ body{
 header{
   background:linear-gradient(135deg,#0ea5e9,#0284c7);
   color:white;
-  padding:30px;
+  padding:25px 15px;
   text-align:center;
   position:relative;
 }
 
 header h1{
   margin:0;
+  font-size: 24px;
+}
+
+header p{
+  font-size: 14px;
+  margin-top: 8px;
 }
 
 .container{
   max-width:1200px;
   margin:auto;
-  padding:15px;
+  padding:10px;
 }
 
 .card{
   background:white;
-  border-radius:16px;
-  padding:20px;
-  margin-bottom:15px;
-  box-shadow:0 2px 12px rgba(0,0,0,.08);
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
 }
 
 h2{
   color:#0369a1;
   margin-top:0;
+  font-size: 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -63,61 +70,66 @@ h2{
 
 .info-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:10px;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:8px;
 }
 
 .info-box{
   background:#f1f5f9;
-  padding:15px;
-  border-radius:12px;
+  padding:12px;
+  border-radius:10px;
   text-align:center;
+  font-size: 14px;
 }
 
 .timeline{
-  border-left:4px solid var(--main);
-  padding-left:20px;
+  border-left:3px solid var(--main);
+  padding-left:12px;
+  margin-left:5px;
 }
 
 .day-group{
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .day{
-  font-size:20px;
+  font-size:16px;
   font-weight:bold;
   margin:10px 0;
   color:#0284c7;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .item{
-  padding:8px 0;
+  padding:6px 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border-bottom: 1px dashed #eee;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 #map{
-  height:550px;
+  height:450px;
   border-radius:12px;
   z-index: 1;
 }
 
 .btn{
   display:inline-block;
-  padding:8px 12px;
+  padding:6px 10px;
   background:#0ea5e9;
   color:white;
   text-decoration:none;
-  border-radius:8px;
-  font-size: 14px;
+  border-radius:6px;
+  font-size: 13px;
   cursor:pointer;
   border: none;
+  white-space: nowrap;
 }
 
 .btn:hover{
@@ -126,6 +138,9 @@ h2{
 
 .btn-danger {
   background: #ef4444;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 4px;
 }
 .btn-danger:hover {
   background: #dc2626;
@@ -140,15 +155,22 @@ h2{
 
 input, textarea, select{
   width:100%;
-  padding:10px;
-  border:1px solid #ccc;
-  border-radius:8px;
-  margin-top:6px;
-  margin-bottom:8px;
+  padding:8px 10px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  margin-top:4px;
+  margin-bottom:4px;
+  font-size: 14px;
+}
+
+/* 모바일 친화적 입력 필드 */
+.item input[type="text"] {
+  font-size: 13px;
+  padding: 6px 8px;
 }
 
 .total{
-  font-size:22px;
+  font-size:20px;
   font-weight:bold;
   color:#0284c7;
   margin-top:10px;
@@ -157,51 +179,61 @@ input, textarea, select{
 
 .flex-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
 .memo-item {
   background: #fffbeb;
   border: 1px solid #fef3c7;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 8px;
 }
 
 .filter-bar {
   background: #e0f2fe;
-  padding: 12px;
+  padding: 10px;
   border-radius: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+  font-size: 13px;
 }
 
 .filter-checkboxes {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   background: white;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
   border: 1px solid #bae6fd;
 }
 
 footer{
   text-align:center;
-  padding:30px;
+  padding:20px;
   color:#666;
+  font-size: 13px;
 }
 
 @media(max-width:768px){
   #map{
-    height:350px;
+    height:300px;
+  }
+  .item {
+    gap: 5px;
+  }
+  .item input[type="text"] {
+    font-size: 12px;
+    padding: 5px;
   }
 }
 </style>
@@ -211,7 +243,7 @@ footer{
 <header>
   <h1 id="headerTitle">🏝 제주 가족여행 Planner</h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
-  <button class="btn" style="margin-top:10px; background:rgba(255,255,255,0.2);" onclick="toggleEditHeader()">✏ 제목/설명 편집</button>
+  <button class="btn" style="margin-top:8px; font-size:12px; padding:4px 10px; background:rgba(255,255,255,0.25);" onclick="toggleEditHeader()">✏ 제목/설명 편집</button>
 </header>
 
 <div class="container" id="editHeaderBox" style="display:none;">
@@ -229,7 +261,7 @@ footer{
 
   <!-- 1. 여행 정보 -->
   <div class="card">
-    <h2>✈ 여행 정보 <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="toggleEditInfo()">편집</button></h2>
+    <h2>✈ 여행 정보 <button class="btn" style="font-size:11px; padding:3px 8px;" onclick="toggleEditInfo()">편집</button></h2>
     
     <div class="info-grid" id="infoDisplay">
       <div class="info-box"><strong>도착</strong><br><span id="dispArrival">12/25 12:00</span></div>
@@ -238,9 +270,9 @@ footer{
       <div class="info-box"><strong>인원</strong><br><span id="dispPeople">4명</span></div>
     </div>
 
-    <div id="infoEditBox" style="display:none; margin-top:15px; background:#f8fafc; padding:15px; border-radius:12px;">
+    <div id="infoEditBox" style="display:none; margin-top:12px; background:#f8fafc; padding:12px; border-radius:10px;">
       <h3>여행 정보 수정</h3>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
         <div>
           <label>도착 일시</label>
           <input type="text" id="editArrival" value="12/25 12:00">
@@ -255,7 +287,7 @@ footer{
       
       <label>숙소 목록 (추가/제거 및 주소 설정)</label>
       <div id="hotelListEdit"></div>
-      <button class="btn" style="margin-top:5px; font-size:12px;" onclick="addHotelInput()">+ 숙소 추가</button>
+      <button class="btn" style="margin-top:5px; font-size:11px; padding:4px 8px;" onclick="addHotelInput()">+ 숙소 추가</button>
       <br><br>
       <button class="btn btn-success" onclick="saveInfo()">정보 저장</button>
     </div>
@@ -264,53 +296,53 @@ footer{
   <!-- 2. 여행 지도 -->
   <div class="card">
     <h2>🗺 여행 지도 
-      <span style="font-size:13px; font-weight:normal; color:#666;">(🏠숙소 / 🍜맛집 / ☕카페 / 📍일정)</span>
+      <span style="font-size:11px; font-weight:normal; color:#666;">(🏠숙소 / 🍜맛집 / ☕카페 / 📍일정)</span>
     </h2>
     
     <!-- 지도 필터 컨트롤 바 -->
     <div class="filter-bar">
       <strong>🗺 지도 필터:</strong>
       <div class="filter-checkboxes">
-        <label><input type="checkbox" id="chkShowHotel" checked onchange="renderMap()"> 🏠 숙소</label>
-        <label><input type="checkbox" id="chkShowRestaurant" checked onchange="renderMap()"> 🍜 맛집</label>
-        <label><input type="checkbox" id="chkShowCafe" checked onchange="renderMap()"> ☕ 카페</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkShowHotel" checked onchange="renderMap()"> 🏠 숙소</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkShowRestaurant" checked onchange="renderMap()"> 🍜 맛집</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkShowCafe" checked onchange="renderMap()"> ☕ 카페</label>
       </div>
-      <select id="selectDayFilter" onchange="renderMap()" style="padding:6px; border-radius:6px; width:auto; margin:0;">
+      <select id="selectDayFilter" onchange="renderMap()" style="padding:6px; border-radius:6px; width:auto; margin:0; font-size:13px;">
         <option value="all">📅 전체 일정 동선 보기</option>
       </select>
     </div>
 
     <div id="map"></div>
-    <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;" id="quickLinks"></div>
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;" id="quickLinks"></div>
   </div>
 
   <!-- 3. 여행 일정 -->
   <div class="card">
     <h2>
       📅 여행 일정 
-      <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="addDaySection()">+ 날짜 추가</button>
+      <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:13px;">💡 일정 옆의 <b>[동선 체크 ☑]</b>를 누르면, 해당 날짜의 체크된 장소들이 지도에 선(동선)으로 연결되어 표시됩니다!</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 일정 옆의 <b>[동선 체크 ☑]</b>를 누르면, 해당 날짜의 체크된 장소들이 지도에 선(동선)으로 연결됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
   <!-- 4. 추천 맛집 & 카페 -->
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-    <div class="card">
-      <h2>🍜 추천 맛집 <button class="btn" style="font-size:12px; padding:3px 8px;" onclick="addPlaceItem('restaurant')">+ 추가</button></h2>
-      <div id="restaurantList" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+    <div class="card" style="margin-bottom:0;">
+      <h2>🍜 추천 맛집 <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="addPlaceItem('restaurant')">+ 추가</button></h2>
+      <div id="restaurantList" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;"></div>
     </div>
-    <div class="card">
-      <h2>☕ 추천 카페 <button class="btn" style="font-size:12px; padding:3px 8px;" onclick="addPlaceItem('cafe')">+ 추가</button></h2>
-      <div id="cafeList" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+    <div class="card" style="margin-bottom:0;">
+      <h2>☕ 추천 카페 <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="addPlaceItem('cafe')">+ 추가</button></h2>
+      <div id="cafeList" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;"></div>
     </div>
   </div>
 
   <!-- 5. 여행경비 계산기 -->
-  <div class="card">
-    <h2>💰 여행경비 계산기 <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="addExpenseItem()">+ 항목 추가</button></h2>
+  <div class="card" style="margin-top:12px;">
+    <h2>💰 여행경비 계산기 <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addExpenseItem()">+ 항목 추가</button></h2>
     <div id="expenseContainer"></div>
-    <button class="btn" onclick="calc()" style="margin-top:10px;">총 경비 계산</button>
+    <button class="btn" onclick="calc()" style="margin-top:8px; font-size:13px; padding:6px 12px;">총 경비 계산</button>
     <div class="total" id="result">예상 총 경비 : 0원</div>
   </div>
 
@@ -318,25 +350,25 @@ footer{
   <div class="card">
     <h2>✅ 여행 준비 체크리스트 
       <div class="flex-row">
-        <input type="text" id="newCheckItemName" placeholder="새 준비물 입력" style="margin:0; width:150px; font-size:13px; padding:6px;">
-        <button class="btn" style="font-size:12px; padding:6px 10px;" onclick="addCheckItem()">+ 추가</button>
+        <input type="text" id="newCheckItemName" placeholder="새 준비물 입력" style="margin:0; width:120px; font-size:12px; padding:5px;">
+        <button class="btn" style="font-size:11px; padding:5px 8px;" onclick="addCheckItem()">+ 추가</button>
       </div>
     </h2>
-    <div id="checklistContainer" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-top:10px;"></div>
+    <div id="checklistContainer" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-top:8px;"></div>
   </div>
 
   <!-- 7. 가족 메모장 -->
   <div class="card">
-    <h2>📝 가족 메모장 <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="addMemoItem()">+ 메모 추가</button></h2>
-    <p style="color:#666; font-size:13px;">가족 모두가 자유롭게 추가하고 삭제할 수 있는 공유 메모장입니다.</p>
-    <div id="memoContainer" style="margin-top:10px;"></div>
+    <h2>📝 가족 메모장 <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addMemoItem()">+ 메모 추가</button></h2>
+    <p style="color:#666; font-size:12px; margin-bottom:8px;">가족 모두가 자유롭게 추가하고 삭제할 수 있는 공유 메모장입니다.</p>
+    <div id="memoContainer" style="margin-top:8px;"></div>
   </div>
 
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V7<br>
-  숙소, 맛집, 카페 개별 지도 필터 지원
+  제주 가족여행 Premium Planner V8<br>
+  모바일 최적화 및 사용자 친화적 UI 개선
 </footer>
 
 <script>
@@ -367,19 +399,17 @@ const presetCoords = {
   "카페공작소": { lat: 33.5250, lng: 126.8600 }
 };
 
-// 입력된 텍스트에서 장소명을 추출해 대략적 좌표를 찾아주는 헬퍼
 function guessCoords(text) {
   for (let key in presetCoords) {
     if (text.includes(key)) {
       return presetCoords[key];
     }
   }
-  // 기본값 (제주시청 부근)
   return { lat: 33.4996, lng: 126.5312 };
 }
 
-// --- 초기 데이터 구조 ---
-let tripData = JSON.parse(localStorage.getItem("jejuTripDataV7")) || {
+// --- 스마트 데이터 로딩 (사용자가 웹에서 변경한 localStorage 내용 우선 유지, 푸시 시 기본값 덮어쓰기 방지) ---
+const defaultTripData = {
   title: "🏝 제주 가족여행 Planner",
   sub: "소소한 하루 (구좌읍) | 12/25 ~ 12/28",
   arrival: "12/25 12:00",
@@ -467,8 +497,15 @@ let tripData = JSON.parse(localStorage.getItem("jejuTripDataV7")) || {
   ]
 };
 
+// 로컬스토리지에 데이터가 없거나, 버전이 다르면 합쳐서 보존
+let tripData = JSON.parse(localStorage.getItem("jejuTripDataV8"));
+if (!tripData) {
+  tripData = defaultTripData;
+  localStorage.setItem("jejuTripDataV8", JSON.stringify(tripData));
+}
+
 function saveAll() {
-  localStorage.setItem("jejuTripDataV7", JSON.stringify(tripData));
+  localStorage.setItem("jejuTripDataV8", JSON.stringify(tripData));
   renderAll();
 }
 
@@ -479,7 +516,6 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }
 let currentLayers = [];
 
 function renderMap() {
-  // 기존 레이어 제거
   currentLayers.forEach(layer => map.removeLayer(layer));
   currentLayers = [];
 
@@ -490,18 +526,19 @@ function renderMap() {
   const quickLinksEl = document.getElementById("quickLinks");
   quickLinksEl.innerHTML = "";
 
-  // 1. 숙소 표시 필터
   if (showHotel) {
     tripData.hotels.forEach(h => {
       if(!h.lat || !h.lng) return;
-      const markerHtml = `<div style="background:#0284c7;color:white;padding:5px 8px;border-radius:20px;font-weight:bold;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;">🏠 ${h.name} (${h.nights})</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-hotel-icon', iconSize: [110, 30], iconAnchor: [55, 15] });
+      const markerHtml = `<div style="background:#0284c7;color:white;padding:4px 6px;border-radius:15px;font-weight:bold;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;">🏠 ${h.name} (${h.nights})</div>`;
+      const icon = L.divIcon({ html: markerHtml, className: 'custom-hotel-icon', iconSize: [100, 26], iconAnchor: [50, 13] });
       const marker = L.marker([h.lat, h.lng], { icon }).addTo(map).bindPopup(`<b>[숙소] ${h.name}</b><br>주소: ${h.address || '정보 없음'}<br>${h.nights}`);
       currentLayers.push(marker);
 
       const btn = document.createElement("a");
       btn.className = "btn";
       btn.style.background = "#0284c7";
+      btn.style.fontSize = "12px";
+      btn.style.padding = "5px 8px";
       btn.target = "_blank";
       btn.href = `https://maps.google.com/?q=${encodeURIComponent(h.name + ' ' + (h.address || ''))}`;
       btn.innerText = `🏠 ${h.name}`;
@@ -509,39 +546,35 @@ function renderMap() {
     });
   }
 
-  // 2. 맛집 표시 필터
   if (showRestaurant) {
     tripData.restaurants.forEach(r => {
       if(!r.lat || !r.lng) return;
-      const markerHtml = `<div style="background:#f97316;color:white;padding:3px 6px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">🍜 ${r.name}</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-rest-icon', iconSize: [90, 24], iconAnchor: [45, 12] });
+      const markerHtml = `<div style="background:#f97316;color:white;padding:2px 5px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">🍜 ${r.name}</div>`;
+      const icon = L.divIcon({ html: markerHtml, className: 'custom-rest-icon', iconSize: [80, 22], iconAnchor: [40, 11] });
       const marker = L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(`<b>[맛집] ${r.name}</b><br>주소: ${r.address || '정보 없음'}`);
       currentLayers.push(marker);
     });
   }
 
-  // 3. 카페 표시 필터
   if (showCafe) {
     tripData.cafes.forEach(c => {
       if(!c.lat || !c.lng) return;
-      const markerHtml = `<div style="background:#8b5cf6;color:white;padding:3px 6px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">☕ ${c.name}</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-cafe-icon', iconSize: [90, 24], iconAnchor: [45, 12] });
+      const markerHtml = `<div style="background:#8b5cf6;color:white;padding:2px 5px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">☕ ${c.name}</div>`;
+      const icon = L.divIcon({ html: markerHtml, className: 'custom-cafe-icon', iconSize: [80, 22], iconAnchor: [40, 11] });
       const marker = L.marker([c.lat, c.lng], { icon }).addTo(map).bindPopup(`<b>[카페] ${c.name}</b><br>주소: ${c.address || '정보 없음'}`);
       currentLayers.push(marker);
     });
   }
 
-  // 4. 일정 동선 및 체크된 항목 표시 (날짜별 필터링 연동)
   let routeCoords = [];
-  
   tripData.days.forEach((day, dIdx) => {
     if (dayFilter !== "all" && dayFilter != dIdx) return;
 
     day.items.forEach(item => {
       if(item.checked && item.lat && item.lng) {
         routeCoords.push([item.lat, item.lng]);
-        const markerHtml = `<div style="background:#0ea5e9;color:white;padding:3px 8px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2); font-weight:bold;">📍 ${item.text}</div>`;
-        const icon = L.divIcon({ html: markerHtml, className: 'custom-item-icon', iconSize: [120, 24], iconAnchor: [60, 12] });
+        const markerHtml = `<div style="background:#0ea5e9;color:white;padding:2px 6px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2); font-weight:bold;">📍 ${item.text}</div>`;
+        const icon = L.divIcon({ html: markerHtml, className: 'custom-item-icon', iconSize: [100, 22], iconAnchor: [50, 11] });
         const marker = L.marker([item.lat, item.lng], { icon }).addTo(map).bindPopup(`<b>[${day.date}] ${item.text}</b><br>위치: ${item.address || '직접 입력됨'}`);
         currentLayers.push(marker);
       }
@@ -556,30 +589,26 @@ function renderMap() {
 
 // --- 전체 화면 렌더링 함수 ---
 function renderAll() {
-  // 헤더
   document.getElementById("headerTitle").innerText = tripData.title;
   document.getElementById("headerSub").innerText = tripData.sub;
   document.getElementById("inputTitle").value = tripData.title;
   document.getElementById("inputSub").value = tripData.sub;
 
-  // 여행 정보
   document.getElementById("dispArrival").innerText = tripData.arrival;
   document.getElementById("dispDeparture").innerText = tripData.departure;
   document.getElementById("dispPeople").innerText = tripData.people;
   
   let hotelHtml = "";
   tripData.hotels.forEach(h => {
-    hotelHtml += `<b>${h.name}</b> (${h.nights})<br><span style="font-size:12px;color:#666;">${h.address || ''}</span><br>`;
+    hotelHtml += `<b>${h.name}</b> (${h.nights})<br><span style="font-size:11px;color:#666;">${h.address || ''}</span><br>`;
   });
   document.getElementById("dispHotels").innerHTML = hotelHtml;
 
-  // 정보 수정 폼 세팅
   document.getElementById("editArrival").value = tripData.arrival;
   document.getElementById("editDeparture").value = tripData.departure;
   document.getElementById("editPeople").value = tripData.people;
   renderHotelEditList();
 
-  // 일정 필터 셀렉트박스 업데이트
   const selectDayFilter = document.getElementById("selectDayFilter");
   const currentFilterVal = selectDayFilter.value;
   selectDayFilter.innerHTML = `<option value="all">📅 전체 일정 동선 보기</option>`;
@@ -588,7 +617,6 @@ function renderAll() {
   });
   selectDayFilter.value = currentFilterVal;
 
-  // 일정 렌더링
   const timelineContainer = document.getElementById("timelineContainer");
   timelineContainer.innerHTML = "";
   tripData.days.forEach((day, dIdx) => {
@@ -596,12 +624,12 @@ function renderAll() {
     day.items.forEach((item, iIdx) => {
       itemsHtml += `
         <div class="item">
-          <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:bold; color:#0284c7;" title="체크하면 지도에 동선이 표시됩니다">
-            <input type="checkbox" ${item.checked ? "checked" : ""} onchange="toggleItemCheck(${dIdx}, ${iIdx})" style="width:18px; height:18px; margin:0;"> 동선체크
+          <label style="display:flex; align-items:center; gap:3px; cursor:pointer; font-size:12px; font-weight:bold; color:#0284c7; white-space:nowrap;">
+            <input type="checkbox" ${item.checked ? "checked" : ""} onchange="toggleItemCheck(${dIdx}, ${iIdx})" style="width:16px; height:16px; margin:0;"> 동선
           </label>
-          <input type="text" placeholder="일정 내용 (예: 14:00 비자림 산책)" value="${item.text}" onchange="updateItemText(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:6px; flex:2; min-width:180px;">
-          <input type="text" placeholder="장소명 또는 주소 (예: 비자림)" value="${item.address || ''}" onchange="updateItemAddress(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:6px; flex:1.5; min-width:150px;" title="이름이나 주소를 입력하면 자동으로 위치를 잡습니다">
-          <button class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="removeDayItem(${dIdx}, ${iIdx})">삭제</button>
+          <input type="text" placeholder="일정 내용" value="${item.text}" onchange="updateItemText(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.5; min-width:110px;">
+          <input type="text" placeholder="장소/주소" value="${item.address || ''}" onchange="updateItemAddress(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.2; min-width:90px;">
+          <button class="btn btn-danger" onclick="removeDayItem(${dIdx}, ${iIdx})">삭제</button>
         </div>
       `;
     });
@@ -609,27 +637,26 @@ function renderAll() {
     timelineContainer.innerHTML += `
       <div class="day-group">
         <div class="day">
-          <span>📅 <input type="text" value="${day.date}" onchange="updateDayDate(${dIdx}, this.value)" style="display:inline-block; width:220px; font-size:18px; margin:0; padding:4px;"></span>
+          <span>📅 <input type="text" value="${day.date}" onchange="updateDayDate(${dIdx}, this.value)" style="display:inline-block; width:180px; font-size:15px; margin:0; padding:4px;"></span>
           <div>
-            <button class="btn" style="font-size:12px; padding:4px 8px;" onclick="addDayItem(${dIdx})">+ 일정추가</button>
-            <button class="btn btn-danger" style="font-size:12px; padding:4px 8px;" onclick="removeDaySection(${dIdx})">날짜 삭제</button>
+            <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="addDayItem(${dIdx})">+ 일정</button>
+            <button class="btn btn-danger" style="font-size:11px; padding:3px 6px;" onclick="removeDaySection(${dIdx})">날짜삭제</button>
           </div>
         </div>
-        <div style="padding-left:10px;">${itemsHtml}</div>
+        <div style="padding-left:5px;">${itemsHtml}</div>
       </div>
     `;
   });
 
-  // 추천 맛집 & 카페
   const rList = document.getElementById("restaurantList");
   rList.innerHTML = "";
   tripData.restaurants.forEach((r, idx) => {
     rList.innerHTML += `
-      <div style="display:flex; gap:8px; align-items:center;">
-        <span style="font-size:16px;">❤️</span>
-        <input type="text" value="${r.name}" onchange="updatePlace('restaurant', ${idx}, 'name', this.value)" placeholder="맛집 이름" style="margin:0; flex:1; padding:6px;">
-        <input type="text" value="${r.address || ''}" onchange="updatePlace('restaurant', ${idx}, 'address', this.value)" placeholder="주소/위치" style="margin:0; flex:1; padding:6px;">
-        <button class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="removePlace('restaurant', ${idx})">삭제</button>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <span style="font-size:14px;">❤️</span>
+        <input type="text" value="${r.name}" onchange="updatePlace('restaurant', ${idx}, 'name', this.value)" placeholder="맛집 이름" style="margin:0; flex:1; padding:5px; font-size:12px;">
+        <input type="text" value="${r.address || ''}" onchange="updatePlace('restaurant', ${idx}, 'address', this.value)" placeholder="주소" style="margin:0; flex:1; padding:5px; font-size:12px;">
+        <button class="btn btn-danger" onclick="removePlace('restaurant', ${idx})">삭제</button>
       </div>
     `;
   });
@@ -638,50 +665,47 @@ function renderAll() {
   cList.innerHTML = "";
   tripData.cafes.forEach((c, idx) => {
     cList.innerHTML += `
-      <div style="display:flex; gap:8px; align-items:center;">
-        <span style="font-size:16px;">☕</span>
-        <input type="text" value="${c.name}" onchange="updatePlace('cafe', ${idx}, 'name', this.value)" placeholder="카페 이름" style="margin:0; flex:1; padding:6px;">
-        <input type="text" value="${c.address || ''}" onchange="updatePlace('cafe', ${idx}, 'address', this.value)" placeholder="주소/위치" style="margin:0; flex:1; padding:6px;">
-        <button class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="removePlace('cafe', ${idx})">삭제</button>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <span style="font-size:14px;">☕</span>
+        <input type="text" value="${c.name}" onchange="updatePlace('cafe', ${idx}, 'name', this.value)" placeholder="카페 이름" style="margin:0; flex:1; padding:5px; font-size:12px;">
+        <input type="text" value="${c.address || ''}" onchange="updatePlace('cafe', ${idx}, 'address', this.value)" placeholder="주소" style="margin:0; flex:1; padding:5px; font-size:12px;">
+        <button class="btn btn-danger" onclick="removePlace('cafe', ${idx})">삭제</button>
       </div>
     `;
   });
 
-  // 경비 계산기
   const expContainer = document.getElementById("expenseContainer");
   expContainer.innerHTML = "";
   tripData.expenses.forEach((ex, idx) => {
     expContainer.innerHTML += `
-      <div class="flex-row" style="margin-bottom:8px;">
-        <input type="text" value="${ex.name}" onchange="updateExpenseName(${idx}, this.value)" style="margin:0; width:40%;">
-        <input type="number" value="${ex.cost}" onchange="updateExpenseCost(${idx}, this.value)" style="margin:0; width:45%;">
-        <button class="btn btn-danger" style="padding:8px; font-size:12px;" onclick="removeExpense(${idx})">삭제</button>
+      <div class="flex-row" style="margin-bottom:6px;">
+        <input type="text" value="${ex.name}" onchange="updateExpenseName(${idx}, this.value)" style="margin:0; width:38%; padding:5px; font-size:13px;">
+        <input type="number" value="${ex.cost}" onchange="updateExpenseCost(${idx}, this.value)" style="margin:0; width:45%; padding:5px; font-size:13px;">
+        <button class="btn btn-danger" onclick="removeExpense(${idx})">삭제</button>
       </div>
     `;
   });
   calc();
 
-  // 체크리스트
   const checkContainer = document.getElementById("checklistContainer");
   checkContainer.innerHTML = "";
   tripData.checklist.forEach((chk, idx) => {
     checkContainer.innerHTML += `
-      <div class="flex-row" style="background:#f8fafc; padding:8px; border-radius:8px;">
-        <input type="checkbox" ${chk.checked ? "checked" : ""} onchange="toggleCheckItem(${idx})" style="width:20px; height:20px; margin:0;">
-        <input type="text" value="${chk.name}" onchange="updateCheckItemName(${idx}, this.value)" style="margin:0; padding:4px; border:none; background:transparent; font-size:14px; flex:1;">
-        <button class="btn btn-danger" style="padding:4px 6px; font-size:11px;" onclick="removeCheckItem(${idx})">삭제</button>
+      <div class="flex-row" style="background:#f8fafc; padding:6px; border-radius:6px;">
+        <input type="checkbox" ${chk.checked ? "checked" : ""} onchange="toggleCheckItem(${idx})" style="width:16px; height:16px; margin:0;">
+        <input type="text" value="${chk.name}" onchange="updateCheckItemName(${idx}, this.value)" style="margin:0; padding:3px; border:none; background:transparent; font-size:13px; flex:1;">
+        <button class="btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="removeCheckItem(${idx})">삭제</button>
       </div>
     `;
   });
 
-  // 메모장
   const memoContainer = document.getElementById("memoContainer");
   memoContainer.innerHTML = "";
   tripData.memos.forEach((m, idx) => {
     memoContainer.innerHTML += `
       <div class="memo-item">
-        <textarea onchange="updateMemoText(${idx}, this.value)" style="margin:0; border:none; background:transparent; resize:vertical; font-family:inherit;">${m.text}</textarea>
-        <button class="btn btn-danger" style="padding:4px 8px; font-size:12px; margin-left:10px;" onclick="removeMemo(${idx})">삭제</button>
+        <textarea onchange="updateMemoText(${idx}, this.value)" style="margin:0; border:none; background:transparent; resize:vertical; font-family:inherit; font-size:13px; padding:2px;">${m.text}</textarea>
+        <button class="btn btn-danger" onclick="removeMemo(${idx})">삭제</button>
       </div>
     `;
   });
@@ -689,7 +713,6 @@ function renderAll() {
   renderMap();
 }
 
-// --- 헤더 및 여행정보 편집 ---
 function toggleEditHeader() {
   const box = document.getElementById("editHeaderBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
@@ -711,11 +734,11 @@ function renderHotelEditList() {
   container.innerHTML = "";
   tripData.hotels.forEach((h, idx) => {
     container.innerHTML += `
-      <div class="flex-row" style="margin-bottom:8px; flex-wrap:wrap;">
-        <input type="text" placeholder="숙소명 (예: 소소한 하루)" value="${h.name}" onchange="updateHotel(${idx}, 'name', this.value)" style="margin:0; flex:1; min-width:120px;">
-        <input type="text" placeholder="기간 (예: 2박)" value="${h.nights}" onchange="updateHotel(${idx}, 'nights', this.value)" style="margin:0; width:80px;">
-        <input type="text" placeholder="주소 (예: 구좌읍 해맞이해안로)" value="${h.address || ''}" onchange="updateHotelAddress(${idx}, this.value)" style="margin:0; flex:1.5; min-width:150px;">
-        <button class="btn btn-danger" style="padding:8px;" onclick="removeHotel(${idx})">삭제</button>
+      <div class="flex-row" style="margin-bottom:6px; flex-wrap:wrap;">
+        <input type="text" placeholder="숙소명" value="${h.name}" onchange="updateHotel(${idx}, 'name', this.value)" style="margin:0; flex:1; min-width:100px; padding:5px; font-size:12px;">
+        <input type="text" placeholder="기간" value="${h.nights}" onchange="updateHotel(${idx}, 'nights', this.value)" style="margin:0; width:60px; padding:5px; font-size:12px;">
+        <input type="text" placeholder="주소" value="${h.address || ''}" onchange="updateHotelAddress(${idx}, this.value)" style="margin:0; flex:1.2; min-width:110px; padding:5px; font-size:12px;">
+        <button class="btn btn-danger" onclick="removeHotel(${idx})">삭제</button>
       </div>
     `;
   });
@@ -757,7 +780,6 @@ function saveInfo() {
   toggleEditInfo();
 }
 
-// --- 일정 관리 ---
 function addDaySection() {
   tripData.days.push({ date: "새로운 날짜", items: [{ text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: false }] });
   saveAll();
@@ -776,7 +798,7 @@ function updateDayDate(dIdx, val) {
 }
 
 function addDayItem(dIdx) {
-  tripData.days[dIdx].items.push({ text: "새 일정 내용", address: "제주 명소", lat: 33.5, lng: 126.5, checked: false });
+  tripData.days[dIdx].items.push({ text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: false });
   saveAll();
 }
 
@@ -803,9 +825,8 @@ function toggleItemCheck(dIdx, iIdx) {
   saveAll();
 }
 
-// --- 맛집 / 카페 추가 및 관리 ---
 function addPlaceItem(type) {
-  const name = prompt(type === 'restaurant' ? "추가할 맛집 이름을 입력하세요" : "추가할 카페 이름을 입력하세요");
+  const name = prompt(type === 'restaurant' ? "추가할 맛집 이름" : "추가할 카페 이름");
   if(!name) return;
   const coords = guessCoords(name);
   if(type === 'restaurant') {
@@ -833,7 +854,6 @@ function removePlace(type, idx) {
   saveAll();
 }
 
-// --- 여행 경비 계산기 ---
 function addExpenseItem() {
   tripData.expenses.push({ name: "새 항목", cost: 0 });
   saveAll();
@@ -863,7 +883,7 @@ function calc() {
   document.getElementById("result").innerText = "예상 총 경비 : " + total.toLocaleString() + "원";
 }
 
-// --- 준비 체크리스트 ---
+pendCheckItem = function() {}; // placeholder
 function addCheckItem() {
   const nameInput = document.getElementById("newCheckItemName");
   if(!nameInput.value) return;
@@ -887,7 +907,6 @@ function removeCheckItem(idx) {
   saveAll();
 }
 
-// --- 가족 메모장 ---
 function addMemoItem() {
   tripData.memos.push({ text: "새로운 메모 내용을 입력하세요." });
   saveAll();
