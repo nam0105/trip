@@ -380,13 +380,14 @@ footer{
     <div class="filter-bar">
       <strong>🗺 지도 필터:</strong>
       <div class="filter-checkboxes">
-        <label style="cursor:pointer;"><input type="checkbox" id="chkShowHotel" checked onchange="renderMap()"> 🏠 숙소</label>
-        <label style="cursor:pointer;"><input type="checkbox" id="chkShowRestaurant" checked onchange="renderMap()"> 🍜 맛집</label>
-        <label style="cursor:pointer;"><input type="checkbox" id="chkShowCafe" checked onchange="renderMap()"> ☕ 카페</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkShowHotel" checked> 🏠 숙소</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkShowRestaurant" checked> 🍜 맛집</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkShowCafe" checked> ☕ 카페</label>
       </div>
-      <select id="selectDayFilter" onchange="renderMap()" style="padding:6px; border-radius:6px; width:auto; margin:0; font-size:13px;">
+      <select id="selectDayFilter" style="padding:6px; border-radius:6px; width:auto; margin:0; font-size:13px;">
         <option value="all">📅 전체 일정 동선 보기</option>
       </select>
+      <button class="btn btn-success" style="padding:6px 14px; font-size:13px;" onclick="applyMapFilter()">적용</button>
     </div>
 
     <div id="map"></div>
@@ -399,7 +400,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 일정 옆의 <b>[동선 체크 ☑]</b>를 켜면 해당 장소가 지도에 표시되고 날짜별 동선이 점선으로 연결됩니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 일정 옆의 <b>[동선 체크 ☑]</b>를 켜고 <b>[지도 필터의 적용]</b>을 누르면 지도에 동선이 반영됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -444,8 +445,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V14<br>
-  접근 제한 키 안내 문구 업데이트
+  제주 가족여행 Premium Planner V15<br>
+  여행지도 필터 및 [적용] 버튼 추가
 </footer>
 
 <script type="module">
@@ -636,7 +637,8 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }
 
 let currentLayers = [];
 
-function renderMap() {
+// 전역 함수로 등록하여 [적용] 버튼 클릭 시에만 지도 렌더링 수행
+window.renderMap = function() {
   currentLayers.forEach(layer => map.removeLayer(layer));
   currentLayers = [];
 
@@ -706,7 +708,11 @@ function renderMap() {
     const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 4, dashArray: '5, 5' }).addTo(map);
     currentLayers.push(polyline);
   }
-}
+};
+
+window.applyMapFilter = function() {
+  renderMap();
+};
 
 // --- 전체 화면 렌더링 함수 ---
 function renderAll() {
@@ -1052,10 +1058,6 @@ window.updateMemoText = function(idx, val) {
 window.removeMemo = function(idx) {
   tripData.memos.splice(idx, 1);
   saveAll();
-};
-
-window.toggleShowAll = function() {
-  renderMap();
 };
 
 // --- 앱 초기화 및 실시간 리스너 바인딩 ---
