@@ -246,6 +246,34 @@ input, textarea, select{
   100% { opacity: 1; }
 }
 
+/* 인증 잠금 오버레이 스타일 */
+#lockOverlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: 'Malgun Gothic', sans-serif;
+}
+.lock-card {
+  background: white;
+  color: #333;
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+.lock-card h2 {
+  color: #0284c7;
+  margin-top: 0;
+  justify-content: center;
+}
+
 footer{
   text-align:center;
   padding:20px;
@@ -268,6 +296,17 @@ footer{
 </style>
 </head>
 <body>
+
+<!-- 키 인증 잠금 오버레이 -->
+<div id="lockOverlay">
+  <div class="lock-card">
+    <h2>🔒 접근 제한</h2>
+    <p style="color:#666; font-size:14px; margin-bottom:20px;">가족 여행 플래너에 접속하려면 올바른 <b>비밀 키(Key)</b>가 필요합니다.</p>
+    <input type="password" id="accessKeyInput" placeholder="비밀 키를 입력하세요 (예: melang01)" style="margin-bottom:15px; text-align:center;">
+    <button class="btn" style="width:100%; padding:10px;" onclick="verifyKey()">접속하기</button>
+    <p id="keyErrorMsg" style="color:#ef4444; font-size:12px; margin-top:10px; display:none;">비밀 키가 올바르지 않습니다.</p>
+  </div>
+</div>
 
 <div class="sync-status">
   <div class="sync-dot"></div> Firebase 실시간 동기화 중
@@ -399,8 +438,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V9 (Firebase 실시간 연동)<br>
-  PC와 모바일 완벽 동기화 지원
+  제주 가족여행 Premium Planner V10 (URL Key 보안 인증)<br>
+  비밀 키 기반 접속 제한 지원
 </footer>
 
 <script type="module">
@@ -420,6 +459,47 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tripDocRef = doc(db, "trips", "jeju2026");
+
+// 허용할 키 목록 (원하시는 키를 추가/변경하실 수 있습니다)
+const VALID_KEYS = ["melang01", "family2026", "jejuTrip"];
+
+// --- URL 파라미터 또는 세션 검증 ---
+function checkAccessKey() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const keyParam = urlParams.get("key");
+  const storedKey = sessionStorage.getItem("jejuTripAuthKey");
+
+  if (VALID_KEYS.includes(keyParam)) {
+    sessionStorage.setItem("jejuTripAuthKey", keyParam);
+    document.getElementById("lockOverlay").style.display = "none";
+    initApp();
+  } else if (VALID_KEYS.includes(storedKey)) {
+    document.getElementById("lockOverlay").style.display = "none";
+    initApp();
+  } else {
+    document.getElementById("lockOverlay").style.display = "flex";
+  }
+}
+
+window.verifyKey = function() {
+  const inputVal = document.getElementById("accessKeyInput").value.trim();
+  const errorMsg = document.getElementById("keyErrorMsg");
+
+  if (VALID_KEYS.includes(inputVal)) {
+    sessionStorage.setItem("jejuTripAuthKey", inputVal);
+    document.getElementById("lockOverlay").style.display = "none";
+    initApp();
+  } else {
+    errorMsg.style.display = "block";
+  }
+};
+
+// 엔터 키 입력 시 접속 확인
+document.getElementById("accessKeyInput").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    window.verifyKey();
+  }
+});
 
 // --- 기본 좌표 매핑 ---
 const presetCoords = {
@@ -751,7 +831,6 @@ function renderAll() {
   renderMap();
 }
 
-// --- Firebase 실시간 동기화 저장 함수 ---
 async function saveAll() {
   try {
     await setDoc(tripDocRef, tripData);
@@ -760,7 +839,7 @@ async function saveAll() {
   }
 }
 
-// --- 이벤트 및 글로벌 함수 등록 ---
+// --- 글로벌 함수 등록 ---
 window.toggleEditHeader = function() {
   const box = document.getElementById("editHeaderBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
@@ -974,20 +1053,24 @@ window.toggleShowAll = function() {
   renderMap();
 };
 
-// --- Firebase 실시간 리스너 연결 (모바일/PC 양방향 실시간 동기화) ---
-onSnapshot(tripDocRef, async (snapshot) => {
-  if (snapshot.exists()) {
-    tripData = snapshot.data();
-    renderAll();
-  } else {
-    // 최초 데이터가 없을 경우 기본 데이터 업로드
-    await setDoc(tripDocRef, defaultTripData);
-    tripData = defaultTripData;
-    renderAll();
-  }
-}, (error) => {
-  console.error("Firebase 실시간 수신 오류: ", error);
-});
+// --- 앱 초기화 및 실시간 리스너 바인딩 ---
+function initApp() {
+  onSnapshot(tripDocRef, async (snapshot) => {
+    if (snapshot.exists()) {
+      tripData = snapshot.data();
+      renderAll();
+    } else {
+      await setDoc(tripDocRef, defaultTripData);
+      tripData = defaultTripData;
+      renderAll();
+    }
+  }, (error) => {
+    console.error("Firebase 실시간 수신 오류: ", error);
+  });
+}
+
+// 최초 실행 시 키 검증 수행
+checkAccessKey();
 
 </script>
 
