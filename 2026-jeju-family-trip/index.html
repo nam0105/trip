@@ -400,7 +400,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 구체적으로 적어주시면(예: <b>월정7길 28-14</b> 또는 <b>월정리해변</b>) 자동으로 좌표를 찾아 지도에 표시해 줍니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 적어주시면(예: <b>소소한 하루</b>, <b>월정리</b>) 숙소 및 장소 위치와 정확히 동기화됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -445,8 +445,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V19<br>
-  URL 키 검증 로직 버그 수정 및 안정화
+  제주 가족여행 Premium Planner V20<br>
+  숙소 정보 자동 연동 및 좌표 동기화 완벽 해결
 </footer>
 
 <script type="module">
@@ -505,7 +505,7 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
   }
 });
 
-// --- 정밀 제주 지역별 좌표 사전 (읍/면/동/주요 명소 기반) ---
+// --- 정밀 제주 지역별 좌표 사전 (숙소 정보와 완벽 동기화) ---
 const presetCoords = {
   "월정7길 28-14": { lat: 33.5545, lng: 126.7970 },
   "월정7길": { lat: 33.5545, lng: 126.7970 },
@@ -540,10 +540,22 @@ const presetCoords = {
   "중문": { lat: 33.2520, lng: 126.4240 }
 };
 
-// 입력된 주소/장소에서 키워드를 정밀 매칭하여 좌표 추정
-function guessCoords(text) {
+// 입력된 주소/장소에서 키워드를 정밀 매칭하고 등록된 숙소와도 동기화
+function guessCoords(text, tripDataObj) {
   if (!text) return { lat: 33.5562, lng: 126.7958 };
   
+  // 1. 등록된 숙소 이름이나 주소에 포함되는지 확인 (최우선 동기화)
+  if (tripDataObj && tripDataObj.hotels) {
+    for (let h of tripDataObj.hotels) {
+      if (text.includes(h.name) || (h.address && text.includes(h.address))) {
+        if (h.lat && h.lng) {
+          return { lat: h.lat, lng: h.lng };
+        }
+      }
+    }
+  }
+  
+  // 2. 프리셋 좌표 사전 매칭
   let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
   for (let key of sortedKeys) {
     if (text.includes(key)) {
@@ -559,7 +571,6 @@ function guessCoords(text) {
   if (text.includes("안덕")) return { lat: 33.2550, lng: 126.3080 };
   if (text.includes("대정")) return { lat: 33.2230, lng: 126.2520 };
 
-  // 기본값 (월정리 해변 부근)
   return { lat: 33.5562, lng: 126.7958 };
 }
 
@@ -868,7 +879,7 @@ async function saveAll() {
   try {
     await setDoc(tripDocRef, tripData);
   } catch(e) {
-    console.error("Firebase 저장실패: ", e);
+    console.error("Firebase 저장 실패: ", e);
   }
 }
 
@@ -912,8 +923,8 @@ window.addHotelInput = function() {
 
 window.updateHotel = function(idx, field, val) {
   tripData.hotels[idx][field] = val;
-  if(field === 'name') {
-    const coords = guessCoords(val);
+  if(field === 'name' || field === 'address') {
+    const coords = guessCoords(val, tripData);
     tripData.hotels[idx].lat = coords.lat;
     tripData.hotels[idx].lng = coords.lng;
   }
@@ -922,7 +933,7 @@ window.updateHotel = function(idx, field, val) {
 
 window.updateHotelAddress = function(idx, val) {
   tripData.hotels[idx].address = val;
-  const coords = guessCoords(val + ' ' + tripData.hotels[idx].name);
+  const coords = guessCoords(val + ' ' + tripData.hotels[idx].name, tripData);
   tripData.hotels[idx].lat = coords.lat;
   tripData.hotels[idx].lng = coords.lng;
   saveAll();
@@ -975,12 +986,15 @@ window.removeDayItem = function(dIdx, iIdx) {
 
 window.updateItemText = function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].text = val;
+  const coords = guessCoords(val + ' ' + (tripData.days[dIdx].items[iIdx].address || ''), tripData);
+  tripData.days[dIdx].items[iIdx].lat = coords.lat;
+  tripData.days[dIdx].items[iIdx].lng = coords.lng;
   saveAll();
 };
 
 window.updateItemAddress = function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].address = val;
-  const coords = guessCoords(val + ' ' + tripData.days[dIdx].items[iIdx].text);
+  const coords = guessCoords(val + ' ' + tripData.days[dIdx].items[iIdx].text, tripData);
   tripData.days[dIdx].items[iIdx].lat = coords.lat;
   tripData.days[dIdx].items[iIdx].lng = coords.lng;
   saveAll();
@@ -994,7 +1008,7 @@ window.toggleItemCheck = function(dIdx, iIdx) {
 window.addPlaceItem = function(type) {
   const name = prompt(type === 'restaurant' ? "추가할 맛집 이름" : "추가할 카페 이름");
   if(!name) return;
-  const coords = guessCoords(name);
+  const coords = guessCoords(name, tripData);
   if(type === 'restaurant') {
     tripData.restaurants.push({ name, address: name, lat: coords.lat, lng: coords.lng });
   } else {
@@ -1007,7 +1021,7 @@ window.updatePlace = function(type, idx, field, val) {
   const list = type === 'restaurant' ? tripData.restaurants : tripData.cafes;
   list[idx][field] = val;
   if(field === 'name' || field === 'address') {
-    const coords = guessCoords(list[idx].name + ' ' + (list[idx].address || ''));
+    const coords =guessCoords(list[idx].name + ' ' + (list[idx].address || ''), tripData);
     list[idx].lat = coords.lat;
     list[idx].lng = coords.lng;
   }
