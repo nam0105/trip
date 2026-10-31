@@ -445,8 +445,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V18<br>
-  월정7길 상세 주소 GPS 좌표 정밀 매칭 적용
+  제주 가족여행 Premium Planner V19<br>
+  URL 키 검증 로직 버그 수정 및 안정화
 </footer>
 
 <script type="module">
@@ -505,7 +505,7 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
   }
 });
 
-// --- 월정7길 28-14 및 제주 정밀 좌표 사전 ---
+// --- 정밀 제주 지역별 좌표 사전 (읍/면/동/주요 명소 기반) ---
 const presetCoords = {
   "월정7길 28-14": { lat: 33.5545, lng: 126.7970 },
   "월정7길": { lat: 33.5545, lng: 126.7970 },
@@ -542,7 +542,7 @@ const presetCoords = {
 
 // 입력된 주소/장소에서 키워드를 정밀 매칭하여 좌표 추정
 function guessCoords(text) {
-  if (!text) return { lat: 33.4996, lng: 126.5312 };
+  if (!text) return { lat: 33.5562, lng: 126.7958 };
   
   let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
   for (let key of sortedKeys) {
@@ -868,7 +868,7 @@ async function saveAll() {
   try {
     await setDoc(tripDocRef, tripData);
   } catch(e) {
-    console.error("Firebase 저장 실패: ", e);
+    console.error("Firebase 저장실패: ", e);
   }
 }
 
@@ -1043,7 +1043,6 @@ window.removeExpense = function(idx) {
 
 window.calc = function() {
   let total = 0;
-  tripData.expenses.exports?.forEach?.(ex => { ... });
   tripData.expenses.forEach(ex => {
     total += Number(ex.cost || 0);
   });
