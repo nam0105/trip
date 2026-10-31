@@ -136,14 +136,21 @@ h2{
   background:#0284c7;
 }
 
-.btn-danger {
-  background: #ef4444;
+/* 직관적이고 작은 마이너스(-) 삭제 버튼 */
+.btn-delete {
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
   padding: 4px 8px;
-  font-size: 11px;
-  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
 }
-.btn-danger:hover {
-  background: #dc2626;
+.btn-delete:hover {
+  background: #ef4444;
+  color: white;
 }
 
 .btn-success {
@@ -393,7 +400,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 일정 옆의 <b>[동선 체크 ☑]</b>를 누르면, 해당 날짜의 체크된 장소들이 지도에 선(동선)으로 연결됩니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 일정의 <b>[동선 체크 ☑]</b>는 기본으로 켜져 있습니다. 원치 않으시면 체크를 해제하세요.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -438,8 +445,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V10 (URL Key 보안 인증)<br>
-  비밀 키 기반 접속 제한 지원
+  제주 가족여행 Premium Planner V11<br>
+  동선 기본 ON 및 마이너스 삭제 버튼 적용
 </footer>
 
 <script type="module">
@@ -460,10 +467,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tripDocRef = doc(db, "trips", "jeju2026");
 
-// 허용할 키 목록 (원하시는 키를 추가/변경하실 수 있습니다)
-const VALID_KEYS = ["melang01", "family2026", "jejuTrip"];
+const VALID_KEYS = ["melang01"];
 
-// --- URL 파라미터 또는 세션 검증 ---
 function checkAccessKey() {
   const urlParams = new URLSearchParams(window.location.search);
   const keyParam = urlParams.get("key");
@@ -494,7 +499,6 @@ window.verifyKey = function() {
   }
 };
 
-// 엔터 키 입력 시 접속 확인
 document.getElementById("accessKeyInput").addEventListener("keypress", function(e) {
   if (e.key === "Enter") {
     window.verifyKey();
@@ -551,41 +555,41 @@ const defaultTripData = {
     {
       date: "12/25 (도착일)",
       items: [
-        { text: "13:00 렌터카 수령", address: "제주공항 렌터카하우스", lat: 33.507, lng: 126.467, checked: false },
-        { text: "14:00 함덕 점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: false },
-        { text: "15:30 비자림", address: "제주시 구좌읍 비자림로", lat: 33.491, lng: 126.809, checked: false },
-        { text: "17:00 세화해변", address: "제주시 구좌읍 세화리", lat: 33.525, lng: 126.860, checked: false },
-        { text: "18:00 월정리 카페거리", address: "제주시 구좌읍 월정리", lat: 33.556, lng: 126.795, checked: false }
+        { text: "13:00 렌터카 수령", address: "제주공항 렌터카하우스", lat: 33.507, lng: 126.467, checked: true },
+        { text: "14:00 함덕 점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
+        { text: "15:30 비자림", address: "제주시 구좌읍 비자림로", lat: 33.491, lng: 126.809, checked: true },
+        { text: "17:00 세화해변", address: "제주시 구좌읍 세화리", lat: 33.525, lng: 126.860, checked: true },
+        { text: "18:00 월정리 카페거리", address: "제주시 구좌읍 월정리", lat: 33.556, lng: 126.795, checked: true }
       ]
     },
     {
       date: "12/26 (역사 · 교육 Day)",
       items: [
-        { text: "09:30 제주4.3평화공원", address: "제주시 명림로", lat: 33.448, lng: 126.651, checked: false },
-        { text: "12:30 점심", address: "제주시내", lat: 33.513, lng: 126.548, checked: false },
-        { text: "14:00 국립제주박물관", address: "제주시 일주동로", lat: 33.513, lng: 126.548, checked: false },
-        { text: "16:30 사라봉 전망대", address: "제주시 사라봉동길", lat: 33.518, lng: 126.535, checked: false },
-        { text: "17:20 용담해안도로 노을", address: "제주시 용담해안도로", lat: 33.512, lng: 126.495, checked: false }
+        { text: "09:30 제주4.3평화공원", address: "제주시 명림로", lat: 33.448, lng: 126.651, checked: true },
+        { text: "12:30 점심", address: "제주시내", lat: 33.513, lng: 126.548, checked: true },
+        { text: "14:00 국립제주박물관", address: "제주시 일주동로", lat: 33.513, lng: 126.548, checked: true },
+        { text: "16:30 사라봉 전망대", address: "제주시 사라봉동길", lat: 33.518, lng: 126.535, checked: true },
+        { text: "17:20 용담해안도로 노을", address: "제주시 용담해안도로", lat: 33.512, lng: 126.495, checked: true }
       ]
     },
     {
       date: "12/27 (가족 체험 Day)",
       items: [
-        { text: "09:30 아쿠아플라넷 제주", address: "서귀포시 성산읍 고성리", lat: 33.433, lng: 126.927, checked: false },
-        { text: "13:00 성산 점심", address: "성산읍", lat: 33.452, lng: 126.924, checked: false },
-        { text: "14:00 섭지코지", address: "서귀포시 성산읍 섭지코지로", lat: 33.424, lng: 126.930, checked: false },
-        { text: "16:00 광치기해변", address: "서귀포시 성산읍 고성리", lat: 33.452, lng: 126.924, checked: false },
-        { text: "17:30 성산 카페", address: "성산읍", lat: 33.460, lng: 126.932, checked: false }
+        { text: "09:30 아쿠아플라넷 제주", address: "서귀포시 성산읍 고성리", lat: 33.433, lng: 126.927, checked: true },
+        { text: "13:00 성산 점심", address: "성산읍", lat: 33.452, lng: 126.924, checked: true },
+        { text: "14:00 섭지코지", address: "서귀포시 성산읍 섭지코지로", lat: 33.424, lng: 126.930, checked: true },
+        { text: "16:00 광치기해변", address: "서귀포시 성산읍 고성리", lat: 33.452, lng: 126.924, checked: true },
+        { text: "17:30 성산 카페", address: "성산읍", lat: 33.460, lng: 126.932, checked: true }
       ]
     },
     {
       date: "12/28 (귀가일)",
       items: [
-        { text: "09:30 함덕해수욕장", address: "제주시 조천읍 함덕리", lat: 33.543, lng: 126.669, checked: false },
-        { text: "11:30 점심", address: "조천읍", lat: 33.543, lng: 126.669, checked: false },
-        { text: "13:00 도두봉", address: "제주시 도두일동", lat: 33.507, lng: 126.467, checked: false },
-        { text: "14:20 렌터카 반납", address: "제주공항", lat: 33.507, lng: 126.467, checked: false },
-        { text: "16:00 김포행 출발", address: "제주공항", lat: 33.507, lng: 126.467, checked: false }
+        { text: "09:30 함덕해수욕장", address: "제주시 조천읍 함덕리", lat: 33.543, lng: 126.669, checked: true },
+        { text: "11:30 점심", address: "조천읍", lat: 33.543, lng: 126.669, checked: true },
+        { text: "13:00 도두봉", address: "제주시 도두일동", lat: 33.507, lng: 126.467, checked: true },
+        { text: "14:20 렌터카 반납", address: "제주공항", lat: 33.507, lng: 126.467, checked: true },
+        { text: "16:00 김포행 출발", address: "제주공항", lat: 33.507, lng: 126.467, checked: true }
       ]
     }
   ],
@@ -740,6 +744,9 @@ function renderAll() {
   tripData.days.forEach((day, dIdx) => {
     let itemsHtml = "";
     day.items.forEach((item, iIdx) => {
+      // 기존에 저장된 데이터에 checked 속성이 없을 경우 기본값 true(ON)로 처리
+      if (item.checked === undefined) item.checked = true;
+
       itemsHtml += `
         <div class="item">
           <label style="display:flex; align-items:center; gap:3px; cursor:pointer; font-size:12px; font-weight:bold; color:#0284c7; white-space:nowrap;">
@@ -747,7 +754,7 @@ function renderAll() {
           </label>
           <input type="text" placeholder="일정 내용" value="${item.text}" onchange="updateItemText(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.5; min-width:110px;">
           <input type="text" placeholder="장소/주소" value="${item.address || ''}" onchange="updateItemAddress(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.2; min-width:90px;">
-          <button class="btn btn-danger" onclick="removeDayItem(${dIdx}, ${iIdx})">삭제</button>
+          <button class="btn-delete" onclick="window.removeDayItem(${dIdx}, ${iIdx})" title="삭제">-</button>
         </div>
       `;
     });
@@ -758,7 +765,7 @@ function renderAll() {
           <span>📅 <input type="text" value="${day.date}" onchange="updateDayDate(${dIdx}, this.value)" style="display:inline-block; width:180px; font-size:15px; margin:0; padding:4px;"></span>
           <div>
             <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="window.addDayItem(${dIdx})">+ 일정</button>
-            <button class="btn btn-danger" style="font-size:11px; padding:3px 6px;" onclick="window.removeDaySection(${dIdx})">날짜삭제</button>
+            <button class="btn-delete" onclick="window.removeDaySection(${dIdx})" title="날짜 삭제">- 날짜삭제</button>
           </div>
         </div>
         <div style="padding-left:5px;">${itemsHtml}</div>
@@ -774,7 +781,7 @@ function renderAll() {
         <span style="font-size:14px;">❤️</span>
         <input type="text" value="${r.name}" onchange="updatePlace('restaurant', ${idx}, 'name', this.value)" placeholder="맛집 이름" style="margin:0; flex:1; padding:5px; font-size:12px;">
         <input type="text" value="${r.address || ''}" onchange="updatePlace('restaurant', ${idx}, 'address', this.value)" placeholder="주소" style="margin:0; flex:1; padding:5px; font-size:12px;">
-        <button class="btn btn-danger" onclick="window.removePlace('restaurant', ${idx})">삭제</button>
+        <button class="btn-delete" onclick="window.removePlace('restaurant', ${idx})" title="삭제">-</button>
       </div>
     `;
   });
@@ -787,7 +794,7 @@ function renderAll() {
         <span style="font-size:14px;">☕</span>
         <input type="text" value="${c.name}" onchange="updatePlace('cafe', ${idx}, 'name', this.value)" placeholder="카페 이름" style="margin:0; flex:1; padding:5px; font-size:12px;">
         <input type="text" value="${c.address || ''}" onchange="updatePlace('cafe', ${idx}, 'address', this.value)" placeholder="주소" style="margin:0; flex:1; padding:5px; font-size:12px;">
-        <button class="btn btn-danger" onclick="window.removePlace('cafe', ${idx})">삭제</button>
+        <button class="btn-delete" onclick="window.removePlace('cafe', ${idx})" title="삭제">-</button>
       </div>
     `;
   });
@@ -799,7 +806,7 @@ function renderAll() {
       <div class="flex-row" style="margin-bottom:6px;">
         <input type="text" value="${ex.name}" onchange="updateExpenseName(${idx}, this.value)" style="margin:0; width:38%; padding:5px; font-size:13px;">
         <input type="number" value="${ex.cost}" onchange="updateExpenseCost(${idx}, this.value)" style="margin:0; width:45%; padding:5px; font-size:13px;">
-        <button class="btn btn-danger" onclick="window.removeExpense(${idx})">삭제</button>
+        <button class="btn-delete" onclick="window.removeExpense(${idx})" title="삭제">-</button>
       </div>
     `;
   });
@@ -812,7 +819,7 @@ function renderAll() {
       <div class="flex-row" style="background:#f8fafc; padding:6px; border-radius:6px;">
         <input type="checkbox" ${chk.checked ? "checked" : ""} onchange="toggleCheckItem(${idx})" style="width:16px; height:16px; margin:0;">
         <input type="text" value="${chk.name}" onchange="updateCheckItemName(${idx}, this.value)" style="margin:0; padding:3px; border:none; background:transparent; font-size:13px; flex:1;">
-        <button class="btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="window.removeCheckItem(${idx})">삭제</button>
+        <button class="btn-delete" onclick="window.removeCheckItem(${idx})" title="삭제">-</button>
       </div>
     `;
   });
@@ -823,7 +830,7 @@ function renderAll() {
     memoContainer.innerHTML += `
       <div class="memo-item">
         <textarea onchange="updateMemoText(${idx}, this.value)" style="margin:0; border:none; background:transparent; resize:vertical; font-family:inherit; font-size:13px; padding:2px;">${m.text}</textarea>
-        <button class="btn btn-danger" onclick="window.removeMemo(${idx})">삭제</button>
+        <button class="btn-delete" onclick="window.removeMemo(${idx})" title="삭제">-</button>
       </div>
     `;
   });
@@ -866,7 +873,7 @@ function renderHotelEditList() {
         <input type="text" placeholder="숙소명" value="${h.name}" onchange="updateHotel(${idx}, 'name', this.value)" style="margin:0; flex:1; min-width:100px; padding:5px; font-size:12px;">
         <input type="text" placeholder="기간" value="${h.nights}" onchange="updateHotel(${idx}, 'nights', this.value)" style="margin:0; width:60px; padding:5px; font-size:12px;">
         <input type="text" placeholder="주소" value="${h.address || ''}" onchange="updateHotelAddress(${idx}, this.value)" style="margin:0; flex:1.2; min-width:110px; padding:5px; font-size:12px;">
-        <button class="btn btn-danger" onclick="window.removeHotel(${idx})">삭제</button>
+        <button class="btn-delete" onclick="window.removeHotel(${idx})" title="삭제">-</button>
       </div>
     `;
   });
@@ -909,7 +916,7 @@ window.saveInfo = function() {
 };
 
 window.addDaySection = function() {
-  tripData.days.push({ date: "새로운 날짜", items: [{ text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: false }] });
+  tripData.days.push({ date: "새로운 날짜", items: [{ text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true }] });
   saveAll();
 };
 
@@ -926,7 +933,7 @@ window.updateDayDate = function(dIdx, val) {
 };
 
 window.addDayItem = function(dIdx) {
-  tripData.days[dIdx].items.push({ text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: false });
+  tripData.days[dIdx].items.push({ text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
   saveAll();
 };
 
@@ -1069,7 +1076,6 @@ function initApp() {
   });
 }
 
-// 최초 실행 시 키 검증 수행
 checkAccessKey();
 
 </script>
