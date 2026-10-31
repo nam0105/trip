@@ -3,1202 +3,785 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏝 제주 가족여행 Planner</title>
 
-<title>🏝 제주 가족여행 Planner V4</title>
-
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-
 :root{
---main:#0ea5e9;
---sub:#0284c7;
---bg:#f8fafc;
---card:#ffffff;
+  --main:#0ea5e9;
+  --sub:#0284c7;
+  --bg:#f8fafc;
+  --card:#ffffff;
 }
 
 *{
-box-sizing:border-box;
+  box-sizing:border-box;
 }
 
 body{
-margin:0;
-font-family:'Malgun Gothic',sans-serif;
-background:var(--bg);
-color:#333;
+  margin:0;
+  font-family:'Malgun Gothic',sans-serif;
+  background:var(--bg);
+  color:#333;
 }
 
 header{
-background:linear-gradient(135deg,#0ea5e9,#0284c7);
-color:white;
-padding:30px;
-text-align:center;
+  background:linear-gradient(135deg,#0ea5e9,#0284c7);
+  color:white;
+  padding:30px;
+  text-align:center;
+  position:relative;
 }
 
 header h1{
-margin:0;
+  margin:0;
 }
 
 .container{
-max-width:1200px;
-margin:auto;
-padding:15px;
+  max-width:1200px;
+  margin:auto;
+  padding:15px;
 }
 
 .card{
-background:white;
-border-radius:16px;
-padding:20px;
-margin-bottom:15px;
-box-shadow:0 2px 12px rgba(0,0,0,.08);
+  background:white;
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:15px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
 }
 
 h2{
-color:#0369a1;
-margin-top:0;
+  color:#0369a1;
+  margin-top:0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .info-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:10px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
 }
 
 .info-box{
-background:#f1f5f9;
-padding:15px;
-border-radius:12px;
-text-align:center;
+  background:#f1f5f9;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
 }
 
 .timeline{
-border-left:4px solid var(--main);
-padding-left:20px;
+  border-left:4px solid var(--main);
+  padding-left:20px;
+}
+
+.day-group{
+  margin-bottom: 25px;
 }
 
 .day{
-font-size:20px;
-font-weight:bold;
-margin:20px 0;
-color:#0284c7;
+  font-size:20px;
+  font-weight:bold;
+  margin:10px 0;
+  color:#0284c7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .item{
-padding:6px 0;
+  padding:8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px dashed #eee;
 }
 
 #map{
-height:500px;
-border-radius:12px;
+  height:500px;
+  border-radius:12px;
+  z-index: 1;
 }
 
 .btn{
-display:inline-block;
-padding:10px 15px;
-background:#0ea5e9;
-color:white;
-text-decoration:none;
-border-radius:10px;
-margin:5px;
+  display:inline-block;
+  padding:8px 12px;
+  background:#0ea5e9;
+  color:white;
+  text-decoration:none;
+  border-radius:8px;
+  font-size: 14px;
+  cursor:pointer;
+  border: none;
 }
 
 .btn:hover{
-background:#0284c7;
+  background:#0284c7;
 }
 
-input,
-textarea{
-width:100%;
-padding:10px;
-border:1px solid #ccc;
-border-radius:8px;
-margin-top:6px;
-margin-bottom:8px;
+.btn-danger {
+  background: #ef4444;
+}
+.btn-danger:hover {
+  background: #dc2626;
 }
 
-button{
-background:#0ea5e9;
-color:white;
-border:none;
-border-radius:8px;
-padding:10px 14px;
-cursor:pointer;
+.btn-success {
+  background: #10b981;
+}
+.btn-success:hover {
+  background: #059669;
+}
+
+input, textarea, select{
+  width:100%;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  margin-top:6px;
+  margin-bottom:8px;
 }
 
 .total{
-font-size:24px;
-font-weight:bold;
-color:#0284c7;
-margin-top:10px;
+  font-size:22px;
+  font-weight:bold;
+  color:#0284c7;
+  margin-top:10px;
+  text-align: right;
 }
 
-.weather{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
+.flex-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.weather-box{
-flex:1;
-background:#f8fafc;
-padding:15px;
-border-radius:12px;
-min-width:250px;
-}
-
-.firebase-item{
-background:#f8fafc;
-padding:10px;
-margin:10px 0;
-border-radius:10px;
-}
-
-.progress-box{
-font-size:22px;
-font-weight:bold;
-color:#0284c7;
-margin-top:15px;
+.memo-item {
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 footer{
-text-align:center;
-padding:30px;
-color:#666;
+  text-align:center;
+  padding:30px;
+  color:#666;
 }
 
 @media(max-width:768px){
-
-#map{
-height:350px;
+  #map{
+    height:350px;
+  }
 }
-
-}
-
 </style>
-
 </head>
 <body>
 
 <header>
-
-<h1>🏝 제주 가족여행 Planner V4</h1>
-
-<p>
-소소한 하루 (구좌읍)
-<br>
-12/25 ~ 12/28
-</p>
-
+  <h1 id="headerTitle">🏝 제주 가족여행 Planner</h1>
+  <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
+  <button class="btn" style="margin-top:10px; background:rgba(255,255,255,0.2);" onclick="toggleEditHeader()">✏ 제목/설명 편집</button>
 </header>
+
+<div class="container" id="editHeaderBox" style="display:none;">
+  <div class="card" style="background:#e0f2fe;">
+    <h3>제목 및 설명 변경</h3>
+    <label>여행 제목</label>
+    <input type="text" id="inputTitle" value="🏝 제주 가족여행 Planner">
+    <label>여행 설명 (숙소 및 기간 등)</label>
+    <input type="text" id="inputSub" value="소소한 하루 (구좌읍) | 12/25 ~ 12/28">
+    <button class="btn" onclick="saveHeader()">저장하기</button>
+  </div>
+</div>
 
 <div class="container">
 
-<div class="card">
-
-<h2>✈ 여행 정보</h2>
-
-<div class="info-grid">
-
-<div class="info-box">
-<strong>도착</strong><br>
-12/25 12:00
-</div>
-
-<div class="info-box">
-<strong>출발</strong><br>
-12/28 16:00
-</div>
-
-<div class="info-box">
-<strong>숙소</strong><br>
-소소한 하루
-</div>
-
-<div class="info-box">
-<strong>인원</strong><br>
-4명
-</div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>🗺 여행 지도</h2>
-
-<div id="map"></div>
-
-<br>
-
-<a
-target="_blank"
-class="btn"
-href="https://maps.google.com/?q=비자림">
-비자림
-</a>
-
-<a
-target="_blank"
-class="btn"
-href="https://maps.google.com/?q=제주4.3평화공원">
-4.3 평화공원
-</a>
-
-<a
-target="_blank"
-class="btn"
-href="https://maps.google.com/?q=국립제주박물관">
-제주박물관
-</a>
-
-<a
-target="_blank"
-class="btn"
-href="https://maps.google.com/?q=아쿠아플라넷 제주">
-아쿠아플라넷
-</a>
-
-</div>
-
+  <!-- 1. 여행 정보 -->
   <div class="card">
-
-<h2>📅 여행 일정</h2>
-
-<div class="timeline">
-
-<div class="day">12/25 (도착일)</div>
-
-<div class="item">13:00 렌터카 수령</div>
-<div class="item">14:00 함덕 점심</div>
-<div class="item">15:30 비자림</div>
-<div class="item">17:00 세화해변</div>
-<div class="item">18:00 월정리 카페거리</div>
-
-<hr>
-
-<div class="day">12/26 (역사 · 교육 Day)</div>
-
-<div class="item">09:30 제주4.3평화공원</div>
-<div class="item">12:30 점심</div>
-<div class="item">14:00 국립제주박물관</div>
-<div class="item">16:30 사라봉 전망대</div>
-<div class="item">17:20 용담해안도로 노을</div>
-
-<hr>
-
-<div class="day">12/27 (가족 체험 Day)</div>
-
-<div class="item">09:30 아쿠아플라넷 제주</div>
-<div class="item">13:00 성산 점심</div>
-<div class="item">14:00 섭지코지</div>
-<div class="item">16:00 광치기해변</div>
-<div class="item">17:30 성산 카페</div>
-
-<hr>
-
-<div class="day">12/28 (귀가일)</div>
-
-<div class="item">09:30 함덕해수욕장</div>
-<div class="item">11:30 점심</div>
-<div class="item">13:00 도두봉</div>
-<div class="item">14:20 렌터카 반납</div>
-<div class="item">16:00 김포행 출발</div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>🍜 추천 맛집</h2>
-
-<ul>
-
-<li>
-❤️ 맛나식당 (성산)
-</li>
-
-<li>
-❤️ 해녀의집 (세화)
-</li>
-
-<li>
-❤️ 덤장 함덕점
-</li>
-
-<li>
-❤️ 성산 해녀짬뽕
-</li>
-
-<li>
-❤️ 전복마시문어마시
-</li>
-
-</ul>
-
-</div>
-
-<div class="card">
-
-<h2>☕ 추천 카페</h2>
-
-<ul>
-
-<li>
-☕ 카페 진정성 제주
-</li>
-
-<li>
-☕ 카페 공작소
-</li>
-
-<li>
-☕ 카페 코지
-</li>
-
-<li>
-☕ 월정리 해변카페
-</li>
-
-<li>
-☕ 오드랑베이커리
-</li>
-
-</ul>
-
-</div>
-
-<div class="card">
-
-<h2>☀️ 날씨별 플랜</h2>
-
-<div class="weather">
-
-<div class="weather-box">
-
-<h3>🌞 Plan A (맑은 날)</h3>
-
-비자림<br>
-세화해변<br>
-월정리<br>
-섭지코지<br>
-광치기해변<br>
-함덕해수욕장
-
-</div>
-
-<div class="weather-box">
-
-<h3>🌧 Plan B (비 또는 강풍)</h3>
-
-아쿠아플라넷<br>
-제주4.3평화공원<br>
-국립제주박물관<br>
-해녀박물관<br>
-제주민속자연사박물관
-
-</div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>💰 여행경비 계산기</h2>
-
-<label>렌터카</label>
-<input
-id="car"
-type="number"
-value="260000">
-
-<label>숙소</label>
-<input
-id="hotel"
-type="number"
-value="350000">
-
-<label>식비</label>
-<input
-id="food"
-type="number"
-value="300000">
-
-<label>입장료</label>
-<input
-id="ticket"
-type="number"
-value="180000">
-
-<button onclick="calc()">
-총 경비 계산
-</button>
-
-<div
-class="total"
-id="result">
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>✅ 여행 준비 체크리스트</h2>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-패딩
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-장갑
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-충전기
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-보조배터리
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-아이 비상약
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-아이 간식
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-우비
-</div>
-
-<div class="check-item">
-<input type="checkbox" class="saveCheck">
-여벌옷
-</div>
-
-</div>
-<!-- ========================= -->
-<!-- Firebase 가족 협업 영역 -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h2>👨‍👩‍👧‍👦 가족 공동 일정</h2>
-
-<p style="color:#666;">
-남편/아내가 함께 추가하고 수정할 수 있는 실시간 일정
-</p>
-
-<input
-id="scheduleTime"
-placeholder="예: 11:00">
-
-<input
-id="scheduleTitle"
-placeholder="예: 김녕미로공원">
-
-<textarea
-id="scheduleMemo"
-placeholder="메모 입력">
-</textarea>
-
-<button id="addBtn">
-➕ 일정 추가
-</button>
-
-<div id="scheduleList"></div>
-
-</div>
-
-<!-- ========================= -->
-<!-- 가족 메모장 -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h2>📝 가족 메모장</h2>
-
-<p style="color:#666;">
-가족 모두가 함께 보는 공유 메모
-</p>
-
-<textarea
-id="familyMemo"
-style="height:180px;"
-placeholder="예: 해녀의집 예약 확인하기">
-</textarea>
-
-<button id="saveMemo">
-💾 메모 저장
-</button>
-
-</div>
-
-<!-- ========================= -->
-<!-- 여행 예산 공유 -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h2>💳 가족 예산 관리</h2>
-
-<label>
-총 여행 예산
-</label>
-
-<input
-id="sharedBudget"
-type="number"
-placeholder="1500000">
-
-<label>
-현재 사용 금액
-</label>
-
-<input
-id="sharedSpent"
-type="number"
-placeholder="500000">
-
-<button id="saveBudget">
-💰 예산 저장
-</button>
-
-<div
-id="budgetResult"
-class="total">
-</div>
-
-</div>
-
-<!-- ========================= -->
-<!-- 여행 진행률 -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h2>🏁 여행 진행률</h2>
-
-<p style="color:#666;">
-방문한 장소를 체크하세요
-</p>
-
-<div id="visitArea">
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="비자림">
-비자림
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="세화해변">
-세화해변
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="월정리">
-월정리
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="제주4.3평화공원">
-4.3평화공원
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="국립제주박물관">
-국립제주박물관
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="아쿠아플라넷">
-아쿠아플라넷
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="섭지코지">
-섭지코지
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="광치기해변">
-광치기해변
-</label>
-
-<br><br>
-
-<label>
-<input
-type="checkbox"
-class="visitCheck"
-value="함덕해변">
-함덕해변
-</label>
-
-</div>
-
-<div
-id="progressText"
-class="progress-box">
-
-0%
-
-</div>
-
-</div>
-
-<!-- ========================= -->
-<!-- 여행 메모 -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h2>📌 여행 아이디어</h2>
-
-<ul>
-
-<li>
-아이들이 좋아할 장소:
-김녕미로공원
-</li>
-
-<li>
-일몰 추천:
-월정리 / 세화해변
-</li>
-
-<li>
-비 오는 날:
-해녀박물관 추가 추천
-</li>
-
-<li>
-공항 이동은
-13시 이전 시작 권장
-</li>
-
-</ul>
+    <h2>✈ 여행 정보 <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="toggleEditInfo()">편집</button></h2>
+    
+    <div class="info-grid" id="infoDisplay">
+      <div class="info-box"><strong>도착</strong><br><span id="dispArrival">12/25 12:00</span></div>
+      <div class="info-box"><strong>출발</strong><br><span id="dispDeparture">12/28 16:00</span></div>
+      <div class="info-box"><strong>숙소 정보</strong><br><span id="dispHotels">소소한 하루 (2박)<br>B숙소 (1박)</span></div>
+      <div class="info-box"><strong>인원</strong><br><span id="dispPeople">4명</span></div>
+    </div>
+
+    <div id="infoEditBox" style="display:none; margin-top:15px; background:#f8fafc; padding:15px; border-radius:12px;">
+      <h3>여행 정보 수정</h3>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div>
+          <label>도착 일시</label>
+          <input type="text" id="editArrival" value="12/25 12:00">
+        </div>
+        <div>
+          <label>출발 일시</label>
+          <input type="text" id="editDeparture" value="12/28 16:00">
+        </div>
+      </div>
+      <label>인원</label>
+      <input type="text" id="editPeople" value="4명">
+      
+      <label>숙소 목록 (추가/제거 가능)</label>
+      <div id="hotelListEdit">
+        <!-- 동적 숙소 리스트 -->
+      </div>
+      <button class="btn" style="margin-top:5px; font-size:12px;" onclick="addHotelInput()">+ 숙소 추가</button>
+      <br><br>
+      <button class="btn btn-success" onclick="saveInfo()">정보 저장</button>
+    </div>
+  </div>
+
+  <!-- 2. 여행 지도 -->
+  <div class="card">
+    <h2>🗺 여행 지도 <span style="font-size:13px; font-weight:normal; color:#666;">(숙소: 🏠파란색 / 맛집·카페: ⭐주황색 / 관광지: 📍하늘색)</span></h2>
+    <div id="map"></div>
+    <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;" id="quickLinks">
+      <!-- 동적 바로가기 버튼 -->
+    </div>
+  </div>
+
+  <!-- 3. 여행 일정 -->
+  <div class="card">
+    <h2>
+      📅 여행 일정 
+      <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="addDaySection()">+ 날짜 추가</button>
+    </h2>
+    <p style="color:#666; font-size:13px;">💡 동선 체크(☑)를 누르면 선택한 경로가 지도에 선으로 표시됩니다!</p>
+    <div class="timeline" id="timelineContainer">
+      <!-- 동적 일정 -->
+    </div>
+  </div>
+
+  <!-- 4. 추천 맛집 & 카페 -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+    <div class="card">
+      <h2>🍜 추천 맛집 <button class="btn" style="font-size:12px; padding:3px 8px;" onclick="addPlaceItem('restaurant')">+ 추가</button></h2>
+      <ul id="restaurantList" style="padding-left:20px; line-height: 1.8;"></ul>
+    </div>
+    <div class="card">
+      <h2>☕ 추천 카페 <button class="btn" style="font-size:12px; padding:3px 8px;" onclick="addPlaceItem('cafe')">+ 추가</button></h2>
+      <ul id="cafeList" style="padding-left:20px; line-height: 1.8;"></ul>
+    </div>
+  </div>
+
+  <!-- 5. 여행경비 계산기 -->
+  <div class="card">
+    <h2>💰 여행경비 계산기 <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="addExpenseItem()">+ 항목 추가</button></h2>
+    <div id="expenseContainer">
+      <!-- 동적 경비 항목 -->
+    </div>
+    <button class="btn" onclick="calc()" style="margin-top:10px;">총 경비 계산</button>
+    <div class="total" id="result">예상 총 경비 : 0원</div>
+  </div>
+
+  <!-- 6. 여행 준비 체크리스트 -->
+  <div class="card">
+    <h2>✅ 여행 준비 체크리스트 
+      <div class="flex-row">
+        <input type="text" id="newCheckItemName" placeholder="새 준비물 입력" style="margin:0; width:150px; font-size:13px; padding:6px;">
+        <button class="btn" style="font-size:12px; padding:6px 10px;" onclick="addCheckItem()">+ 추가</button>
+      </div>
+    </h2>
+    <div id="checklistContainer" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-top:10px;">
+      <!-- 동적 체크리스트 -->
+    </div>
+  </div>
+
+  <!-- 7. 가족 메모장 -->
+  <div class="card">
+    <h2>📝 가족 메모장 <button class="btn" style="font-size:12px; padding:5px 10px;" onclick="addMemoItem()">+ 메모 추가</button></h2>
+    <p style="color:#666; font-size:13px;">가족 모두가 자유롭게 추가하고 삭제할 수 있는 공유 메모장입니다.</p>
+    <div id="memoContainer" style="margin-top:10px;">
+      <!-- 동적 메모 리스트 -->
+    </div>
+  </div>
 
 </div>
 
 <footer>
-
-제주 가족여행 Premium Planner V4
-<br>
-Firebase 실시간 공유 지원
-
+  제주 가족여행 Premium Planner V5<br>
+  Localstorage 실시간 연동 지원
 </footer>
 
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-deleteDoc,
-doc,
-setDoc,
-getDoc,
-onSnapshot
-}
-from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-//////////////////////////////////////////////////
-// Firebase
-//////////////////////////////////////////////////
-
-const firebaseConfig = {
- apiKey: "AIzaSyDz3WFoqAGiRr9uN6PLrwU6a5tphA-cywY",
- authDomain: "jeju-family-trip-35d9c.firebaseapp.com",
- projectId: "jeju-family-trip-35d9c",
- storageBucket: "jeju-family-trip-35d9c.firebasestorage.app",
- messagingSenderId: "195998414148",
- appId: "1:195998414148:web:c05765eef2270eb8cd1311",
- measurementId: "G-TZ9QK72D58"
+<script>
+// --- 기본 데이터 구조 및 초기값 설정 ---
+let tripData = JSON.parse(localStorage.getItem("jejuTripDataV5")) || {
+  title: "🏝 제주 가족여행 Planner",
+  sub: "소소한 하루 (구좌읍) | 12/25 ~ 12/28",
+  arrival: "12/25 12:00",
+  departure: "12/28 16:00",
+  people: "4명",
+  hotels: [
+    { name: "소소한 하루", nights: "2박", lat: 33.515, lng: 126.865 },
+    { name: "B숙소 (예시)", nights: "1박", lat: 33.430, lng: 126.920 }
+  ],
+  days: [
+    {
+      date: "12/25 (도착일)",
+      items: [
+        { text: "13:00 렌터카 수령", lat: 33.507, lng: 126.467, checked: false },
+        { text: "14:00 함덕 점심", lat: 33.543, lng: 126.669, checked: false },
+        { text: "15:30 비자림", lat: 33.491, lng: 126.809, checked: false },
+        { text: "17:00 세화해변", lat: 33.525, lng: 126.860, checked: false },
+        { text: "18:00 월정리 카페거리", lat: 33.556, lng: 126.795, checked: false }
+      ]
+    },
+    {
+      date: "12/26 (역사 · 교육 Day)",
+      items: [
+        { text: "09:30 제주4.3평화공원", lat: 33.448, lng: 126.651, checked: false },
+        { text: "12:30 점심", lat: 33.513, lng: 126.548, checked: false },
+        { text: "14:00 국립제주박물관", lat: 33.513, lng: 126.548, checked: false },
+        { text: "16:30 사라봉 전망대", lat: 33.518, lng: 126.535, checked: false },
+        { text: "17:20 용담해안도로 노을", lat: 33.512, lng: 126.495, checked: false }
+      ]
+    },
+    {
+      date: "12/27 (가족 체험 Day)",
+      items: [
+        { text: "09:30 아쿠아플라넷 제주", lat: 33.433, lng: 126.927, checked: false },
+        { text: "13:00 성산 점심", lat: 33.452, lng: 126.924, checked: false },
+        { text: "14:00 섭지코지", lat: 33.424, lng: 126.930, checked: false },
+        { text: "16:00 광치기해변", lat: 33.452, lng: 126.924, checked: false },
+        { text: "17:30 성산 카페", lat: 33.460, lng: 126.932, checked: false }
+      ]
+    },
+    {
+      date: "12/28 (귀가일)",
+      items: [
+        { text: "09:30 함덕해수욕장", lat: 33.543, lng: 126.669, checked: false },
+        { text: "11:30 점심", lat: 33.543, lng: 126.669, checked: false },
+        { text: "13:00 도두봉", lat: 33.507, lng: 126.467, checked: false },
+        { text: "14:20 렌터카 반납", lat: 33.507, lng: 126.467, checked: false },
+        { text: "16:00 김포행 출발", lat: 33.507, lng: 126.467, checked: false }
+      ]
+    }
+  ],
+  restaurants: [
+    { name: "맛나식당 (성산)", lat: 33.460, lng: 126.910 },
+    { name: "해녀의집 (세화)", lat: 33.525, lng: 126.860 },
+    { name: "덤장 함덕점", lat: 33.543, lng: 126.669 },
+    { name: "성산 해녀짬뽕", lat: 33.450, lng: 126.920 },
+    { name: "전복마시문어마시", lat: 33.550, lng: 126.800 }
+  ],
+  cafes: [
+    { name: "카페 진정성 제주", lat: 33.530, lng: 126.350 },
+    { name: "카페 공작소", lat: 33.525, lng: 126.860 },
+    { name: "카페 코지", lat: 33.440, lng: 126.930 },
+    { name: "월정리 해변카페", lat: 33.556, lng: 126.795 },
+    { name: "오드랑베이커리", lat: 33.543, lng: 126.669 }
+  ],
+  expenses: [
+    { name: "렌터카", cost: 260000 },
+    { name: "숙소", cost: 350000 },
+    { name: "식비", cost: 300000 },
+    { name: "입장료", cost: 180000 }
+  ],
+  checklist: [
+    { name: "패딩", checked: false },
+    { name: "장갑", checked: false },
+    { name: "충전기", checked: false },
+    { name: "보조배터리", checked: false },
+    { name: "아이 비상약", checked: false },
+    { name: "아이 간식", checked: false },
+    { name: "우비", checked: false },
+    { name: "여벌옷", checked: false }
+  ],
+  memos: [
+    { text: "해녀의집 예약 확인하기" },
+    { text: "아이들이 좋아할 김녕미로공원 일정 조율" }
+  ]
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-//////////////////////////////////////////////////
-// 지도
-//////////////////////////////////////////////////
-
-const map = L.map("map").setView([33.47,126.82],10);
-
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-maxZoom:19
-}
-).addTo(map);
-
-const places = [
-
-["소소한 하루",33.515,126.865],
-["비자림",33.491,126.809],
-["세화해변",33.525,126.860],
-["월정리",33.556,126.795],
-
-["제주4.3평화공원",33.448,126.651],
-["국립제주박물관",33.513,126.548],
-
-["아쿠아플라넷",33.433,126.927],
-["섭지코지",33.424,126.930],
-["광치기해변",33.452,126.924],
-
-["함덕해변",33.543,126.669],
-["도두봉",33.507,126.467]
-
-];
-
-places.forEach(place=>{
-
-L.marker([
-place[1],
-place[2]
-])
-.addTo(map)
-.bindPopup(place[0]);
-
-});
-
-//////////////////////////////////////////////////
-// 경비 계산
-//////////////////////////////////////////////////
-
-window.calc = function(){
-
-const total =
-Number(document.getElementById("car").value||0)+
-Number(document.getElementById("hotel").value||0)+
-Number(document.getElementById("food").value||0)+
-Number(document.getElementById("ticket").value||0);
-
-document.getElementById("result").innerText =
-"예상 총 경비 : " +
-total.toLocaleString() +
-"원";
-
-};
-
-//////////////////////////////////////////////////
-// 체크리스트 저장
-//////////////////////////////////////////////////
-
-const checks =
-document.querySelectorAll(".saveCheck");
-
-checks.forEach((check,index)=>{
-
-const key =
-"jejuCheck_" + index;
-
-const saved =
-localStorage.getItem(key);
-
-if(saved==="true"){
-check.checked=true;
+function saveAll() {
+  localStorage.setItem("jejuTripDataV5", JSON.stringify(tripData));
+  renderAll();
 }
 
-check.addEventListener(
-"change",
-()=>{
-localStorage.setItem(
-key,
-check.checked
-);
-}
-);
+// --- 지도 초기화 및 마커/폴리라인 렌더링 ---
+const map = L.map("map").setView([33.47, 126.82], 10);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }).addTo(map);
 
-});
+let currentLayers = [];
+function renderMap() {
+  // 기존 레이어 제거
+  currentLayers.forEach(layer => map.removeLayer(layer));
+  currentLayers = [];
 
-//////////////////////////////////////////////////
-// 공동 일정
-//////////////////////////////////////////////////
+  const quickLinksEl = document.getElementById("quickLinks");
+  quickLinksEl.innerHTML = "";
 
-const scheduleCollection =
-collection(
-db,
-"familySchedules"
-);
+  // 1. 숙소 표시 (파란색 커스텀 마커 또는 아이콘)
+  tripData.hotels.forEach(h => {
+    if(!h.lat || !h.lng) return;
+    const markerHtml = `<div style="background:#0284c7;color:white;padding:5px 8px;border-radius:20px;font-weight:bold;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;">🏠 ${h.name} (${h.nights})</div>`;
+    const icon = L.divIcon({ html: markerHtml, className: 'custom-hotel-icon', iconSize: [110, 30], iconAnchor: [55, 15] });
+    const marker = L.marker([h.lat, h.lng], { icon }).addTo(map).bindPopup(`<b>[숙소] ${h.name}</b><br>${h.nights}`);
+    currentLayers.push(marker);
 
-const scheduleList =
-document.getElementById(
-"scheduleList"
-);
+    // 바로가기 버튼 추가
+    const btn = document.createElement("a");
+    btn.className = "btn";
+    btn.style.background = "#0284c7";
+    btn.target = "_blank";
+    btn.href = `https://maps.google.com/?q=${encodeURIComponent(h.name)}`;
+    btn.innerText = `🏠 ${h.name}`;
+    quickLinksEl.appendChild(btn);
+  });
 
-document
-.getElementById("addBtn")
-.addEventListener(
-"click",
-async()=>{
+  // 2. 추천 맛집 & 카페 표시 (주황색/보라색)
+  tripData.restaurants.forEach(r => {
+    if(!r.lat || !r.lng) return;
+    const markerHtml = `<div style="background:#f97316;color:white;padding:3px 6px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">🍜 ${r.name}</div>`;
+    const icon = L.divIcon({ html: markerHtml, className: 'custom-rest-icon', iconSize: [90, 24], iconAnchor: [45, 12] });
+    const marker = L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(`<b>[맛집] ${r.name}</b>`);
+    currentLayers.push(marker);
+  });
 
-const time =
-document.getElementById(
-"scheduleTime"
-).value;
+  tripData.cafes.forEach(c => {
+    if(!c.lat || !c.lng) return;
+    const markerHtml = `<div style="background:#8b5cf6;color:white;padding:3px 6px;border-radius:15px;font-size:11px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">☕ ${c.name}</div>`;
+    const icon = L.divIcon({ html: markerHtml, className: 'custom-cafe-icon', iconSize: [90, 24], iconAnchor: [45, 12] });
+    const marker = L.marker([c.lat, c.lng], { icon }).addTo(map).bindPopup(`<b>[카페] ${c.name}</b>`);
+    currentLayers.push(marker);
+  });
 
-const title =
-document.getElementById(
-"scheduleTitle"
-).value;
+  // 3. 체크된 일정 동선 표시 (Polyline)
+  let routeCoords = [];
+  tripData.days.forEach(day => {
+    day.items.forEach(item => {
+      if(item.checked && item.lat && item.lng) {
+        routeCoords.push([item.lat, item.lng]);
+        // 일반 일정 마커 표시
+        const marker = L.marker([item.lat, item.lng]).addTo(map).bindPopup(`<b>[일정] ${item.text}</b>`);
+        currentLayers.push(marker);
+      }
+    });
+  });
 
-const memo =
-document.getElementById(
-"scheduleMemo"
-).value;
-
-if(!title){
-alert("일정 제목을 입력하세요.");
-return;
-}
-
-await addDoc(
-scheduleCollection,
-{
-time,
-title,
-memo,
-createdAt:Date.now()
-}
-);
-
-document.getElementById(
-"scheduleTime"
-).value="";
-
-document.getElementById(
-"scheduleTitle"
-).value="";
-
-document.getElementById(
-"scheduleMemo"
-).value="";
-
-}
-);
-
-window.deleteSchedule =
-async(id)=>{
-
-await deleteDoc(
-doc(
-db,
-"familySchedules",
-id
-)
-);
-
-};
-
-onSnapshot(
-scheduleCollection,
-(snapshot)=>{
-
-scheduleList.innerHTML="";
-
-snapshot.forEach(item=>{
-
-const data =
-item.data();
-
-scheduleList.innerHTML += `
-<div class="firebase-item">
-
-<b>${data.time || ""}</b>
-
-${data.title}
-
-<br>
-
-${data.memo || ""}
-
-<br><br>
-
-<button
-onclick="deleteSchedule('${item.id}')">
-삭제
-</button>
-
-</div>
-`;
-
-});
-
-}
-);
-
-//////////////////////////////////////////////////
-// 가족 메모
-//////////////////////////////////////////////////
-
-const familyMemoRef =
-doc(
-db,
-"planner",
-"familyMemo"
-);
-
-document
-.getElementById(
-"saveMemo"
-)
-.addEventListener(
-"click",
-async()=>{
-
-await setDoc(
-familyMemoRef,
-{
-text:document.getElementById(
-"familyMemo"
-).value
-}
-);
-
-alert("메모 저장 완료");
-
-}
-);
-
-onSnapshot(
-familyMemoRef,
-(snapshot)=>{
-
-if(snapshot.exists()){
-
-document.getElementById(
-"familyMemo"
-).value =
-snapshot.data().text || "";
-
+  if(routeCoords.length > 1) {
+    const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 4, dashArray: '5, 5' }).addTo(map);
+    currentLayers.push(polyline);
+  }
 }
 
-}
-);
+// --- 전체 화면 렌더링 함수 ---
+function renderAll() {
+  // 헤더
+  document.getElementById("headerTitle").innerText = tripData.title;
+  document.getElementById("headerSub").innerText = tripData.sub;
+  document.getElementById("inputTitle").value = tripData.title;
+  document.getElementById("inputSub").value = tripData.sub;
 
-//////////////////////////////////////////////////
-// 예산 관리
-//////////////////////////////////////////////////
+  // 여행 정보
+  document.getElementById("dispArrival").innerText = tripData.arrival;
+  document.getElementById("dispDeparture").innerText = tripData.departure;
+  document.getElementById("dispPeople").innerText = tripData.people;
+  
+  let hotelHtml = "";
+  tripData.hotels.forEach(h => {
+    hotelHtml += `${h.name} (${h.nights})<br>`;
+  });
+  document.getElementById("dispHotels").innerHTML = hotelHtml;
 
-const budgetRef =
-doc(
-db,
-"planner",
-"budget"
-);
+  // 정보 수정 폼 세팅
+  document.getElementById("editArrival").value = tripData.arrival;
+  document.getElementById("editDeparture").value = tripData.departure;
+  document.getElementById("editPeople").value = tripData.people;
+  renderHotelEditList();
 
-document
-.getElementById(
-"saveBudget"
-)
-.addEventListener(
-"click",
-async()=>{
+  // 일정 렌더링
+  const timelineContainer = document.getElementById("timelineContainer");
+  timelineContainer.innerHTML = "";
+  tripData.days.forEach((day, dIdx) => {
+    let itemsHtml = "";
+    day.items.forEach((item, iIdx) => {
+      itemsHtml += `
+        <div class="item">
+          <input type="checkbox" ${item.checked ? "checked" : ""} onchange="toggleItemCheck(${dIdx}, ${iIdx})" title="동선에 표시하려면 체크하세요">
+          <input type="text" value="${item.text}" onchange="updateItemText(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:6px; flex:1;">
+          <input type="number" step="0.001" placeholder="위도" value="${item.lat || 33.5}" onchange="updateItemCoord(${dIdx}, ${iIdx}, 'lat', this.value)" style="margin:0; width:90px; padding:6px; font-size:12px;" title="지도 위도">
+          <input type="number" step="0.001" placeholder="경도" value="${item.lng || 126.5}" onchange="updateItemCoord(${dIdx}, ${iIdx}, 'lng', this.value)" style="margin:0; width:90px; padding:6px; font-size:12px;" title="지도 경도">
+          <button class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="removeDayItem(${dIdx}, ${iIdx})">삭제</button>
+        </div>
+      `;
+    });
 
-const budget =
-Number(
-document.getElementById(
-"sharedBudget"
-).value || 0
-);
+    timelineContainer.innerHTML += `
+      <div class="day-group">
+        <div class="day">
+          <span>📅 <input type="text" value="${day.date}" onchange="updateDayDate(${dIdx}, this.value)" style="display:inline-block; width:220px; font-size:18px; margin:0; padding:4px;"></span>
+          <div>
+            <button class="btn" style="font-size:12px; padding:4px 8px;" onclick="addDayItem(${dIdx})">+ 일정추가</button>
+            <button class="btn btn-danger" style="font-size:12px; padding:4px 8px;" onclick="removeDaySection(${dIdx})">날짜 삭제</button>
+          </div>
+        </div>
+        <div style="padding-left:10px;">${itemsHtml}</div>
+      </div>
+    `;
+  });
 
-const spent =
-Number(
-document.getElementById(
-"sharedSpent"
-).value || 0
-);
+  // 추천 맛집 & 카페
+  const rList = document.getElementById("restaurantList");
+  rList.innerHTML = "";
+  tripData.restaurants.forEach((r, idx) => {
+    rList.innerHTML += `<li>❤️ <input type="text" value="${r.name}" onchange="updatePlaceName('restaurant', ${idx}, this.value)" style="display:inline-block; width:70%; margin:2px 0; padding:4px;"> <button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removePlace('restaurant', ${idx})">삭제</button></li>`;
+  });
 
-await setDoc(
-budgetRef,
-{
-budget,
-spent
-}
-);
+  const cList = document.getElementById("cafeList");
+  cList.innerHTML = "";
+  tripData.cafes.forEach((c, idx) => {
+    cList.innerHTML += `<li>☕ <input type="text" value="${c.name}" onchange="updatePlaceName('cafe', ${idx}, this.value)" style="display:inline-block; width:70%; margin:2px 0; padding:4px;"> <button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="removePlace('cafe', ${idx})">삭제</button></li>`;
+  });
 
-}
-);
+  // 경비 계산기
+  const expContainer = document.getElementById("expenseContainer");
+  expContainer.innerHTML = "";
+  tripData.expenses.forEach((ex, idx) => {
+    expContainer.innerHTML += `
+      <div class="flex-row" style="margin-bottom:8px;">
+        <input type="text" value="${ex.name}" onchange="updateExpenseName(${idx}, this.value)" style="margin:0; width:40%;">
+        <input type="number" value="${ex.cost}" onchange="updateExpenseCost(${idx}, this.value)" style="margin:0; width:45%;">
+        <button class="btn btn-danger" style="padding:8px; font-size:12px;" onclick="removeExpense(${idx})">삭제</button>
+      </div>
+    `;
+  });
+  calc();
 
-onSnapshot(
-budgetRef,
-(snapshot)=>{
+  // 체크리스트
+  const checkContainer = document.getElementById("checklistContainer");
+  checkContainer.innerHTML = "";
+  tripData.checklist.forEach((chk, idx) => {
+    checkContainer.innerHTML += `
+      <div class="flex-row" style="background:#f8fafc; padding:8px; border-radius:8px;">
+        <input type="checkbox" ${chk.checked ? "checked" : ""} onchange="toggleCheckItem(${idx})" style="width:20px; height:20px; margin:0;">
+        <input type="text" value="${chk.name}" onchange="updateCheckItemName(${idx}, this.value)" style="margin:0; padding:4px; border:none; background:transparent; font-size:14px; flex:1;">
+        <button class="btn btn-danger" style="padding:4px 6px; font-size:11px;" onclick="removeCheckItem(${idx})">삭제</button>
+      </div>
+    `;
+  });
 
-if(!snapshot.exists())
-return;
+  // 메모장
+  const memoContainer = document.getElementById("memoContainer");
+  memoContainer.innerHTML = "";
+  tripData.memos.forEach((m, idx) => {
+    memoContainer.innerHTML += `
+      <div class="memo-item">
+        <textarea onchange="updateMemoText(${idx}, this.value)" style="margin:0; border:none; background:transparent; resize:vertical; font-family:inherit;">${m.text}</textarea>
+        <button class="btn btn-danger" style="padding:4px 8px; font-size:12px; margin-left:10px;" onclick="removeMemo(${idx})">삭제</button>
+      </div>
+    `;
+  });
 
-const data =
-snapshot.data();
-
-document.getElementById(
-"sharedBudget"
-).value =
-data.budget || 0;
-
-document.getElementById(
-"sharedSpent"
-).value =
-data.spent || 0;
-
-const remain =
-(data.budget||0) -
-(data.spent||0);
-
-document.getElementById(
-"budgetResult"
-).innerText =
-"남은 예산 : " +
-remain.toLocaleString()
-+ "원";
-
-}
-);
-
-//////////////////////////////////////////////////
-// 여행 진행률
-//////////////////////////////////////////////////
-
-const visitChecks =
-document.querySelectorAll(
-".visitCheck"
-);
-
-function updateProgress(){
-
-let checkedCount = 0;
-
-visitChecks.forEach(item=>{
-
-if(item.checked)
-checkedCount++;
-
-});
-
-const percent =
-Math.round(
-(
-checkedCount /
-visitChecks.length
-) * 100
-);
-
-document.getElementById(
-"progressText"
-).innerText =
-percent + "% 완료";
-
-localStorage.setItem(
-"tripProgress",
-JSON.stringify(
-[...visitChecks].map(
-v=>v.checked
-)
-)
-);
-
+  renderMap();
 }
 
-const savedProgress =
-JSON.parse(
-localStorage.getItem(
-"tripProgress"
-)
-);
-
-if(savedProgress){
-
-visitChecks.forEach(
-(item,index)=>{
-
-if(savedProgress[index])
-item.checked=true;
-
+// --- 헤더 및 여행정보 편집 함수 ---
+function toggleEditHeader() {
+  const box = document.getElementById("editHeaderBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
 }
-);
-
+function saveHeader() {
+  tripData.title = document.getElementById("inputTitle").value;
+  tripData.sub = document.getElementById("inputSub").value;
+  saveAll();
+  toggleEditHeader();
 }
 
-visitChecks.forEach(item=>{
+function toggleEditInfo() {
+  const box = document.getElementById("infoEditBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
 
-item.addEventListener(
-"change",
-updateProgress
-);
+function renderHotelEditList() {
+  const container = document.getElementById("hotelListEdit");
+  container.innerHTML = "";
+  tripData.hotels.forEach((h, idx) => {
+    container.innerHTML += `
+      <div class="flex-row" style="margin-bottom:5px;">
+        <input type="text" placeholder="숙소명" value="${h.name}" onchange="updateHotel(${idx}, 'name', this.value)" style="margin:0; flex:2;">
+        <input type="text" placeholder="기간 (예: 2박)" value="${h.nights}" onchange="updateHotel(${idx}, 'nights', this.value)" style="margin:0; flex:1;">
+        <input type="number" step="0.001" placeholder="위도" value="${h.lat || 33.5}" onchange="updateHotel(${idx}, 'lat', this.value)" style="margin:0; width:80px;">
+        <input type="number" step="0.001" placeholder="경도" value="${h.lng || 126.5}" onchange="updateHotel(${idx}, 'lng', this.value)" style="margin:0; width:80px;">
+        <button class="btn btn-danger" style="padding:8px;" onclick="removeHotel(${idx})">삭제</button>
+      </div>
+    `;
+  });
+}
 
-});
+function addHotelInput() {
+  tripData.hotels.push({ name: "새 숙소", nights: "1박", lat: 33.5, lng: 126.5 });
+  renderHotelEditList();
+}
 
-updateProgress();
+function updateHotel(idx, field, val) {
+  if(field === 'lat' || field === 'lng') val = Number(val);
+  tripData.hotels[idx][field] = val;
+}
 
-//////////////////////////////////////////////////
-// 초기 계산
-//////////////////////////////////////////////////
+function removeHotel(idx) {
+  tripData.hotels.splice(idx, 1);
+  renderHotelEditList();
+}
 
-calc();
+function saveInfo() {
+  tripData.arrival = document.getElementById("editArrival").value;
+  tripData.departure = document.getElementById("editDeparture").value;
+  tripData.people = document.getElementById("editPeople").value;
+  saveAll();
+  toggleEditInfo();
+}
 
+// --- 일정 관리 함수 ---
+function addDaySection() {
+  tripData.days.push({ date: "새로운 날짜", items: [{ text: "새 일정", lat: 33.5, lng: 126.5, checked: false }] });
+  saveAll();
+}
+
+function removeDaySection(dIdx) {
+  if(confirm("정말 이 날짜 전체를 삭제하시겠습니까?")) {
+    tripData.days.splice(dIdx, 1);
+    saveAll();
+  }
+}
+
+function updateDayDate(dIdx, val) {
+  tripData.days[dIdx].date = val;
+  saveAll();
+}
+
+function addDayItem(dIdx) {
+  tripData.days[dIdx].items.push({ text: "새 일정", lat: 33.5, lng: 126.5, checked: false });
+  saveAll();
+}
+
+function removeDayItem(dIdx, iIdx) {
+  tripData.days[dIdx].items.splice(iIdx, 1);
+  saveAll();
+}
+
+function updateItemText(dIdx, iIdx, val) {
+  tripData.days[dIdx].items[iIdx].text = val;
+  saveAll();
+}
+
+function updateItemCoord(dIdx, iIdx, coordType, val) {
+  tripData.days[dIdx].items[iIdx][coordType] = Number(val);
+  saveAll();
+}
+
+function toggleItemCheck(dIdx, iIdx) {
+  tripData.days[dIdx].items[iIdx].checked = !tripData.days[dIdx].items[iIdx].checked;
+  saveAll();
+}
+
+// --- 맛집 / 카페 추가 및 관리 ---
+function addPlaceItem(type) {
+  const name = prompt(type === 'restaurant' ? "추가할 맛집 이름 입력" : "추가할 카페 이름 입력");
+  if(!name) return;
+  if(type === 'restaurant') {
+    tripData.restaurants.push({ name, lat: 33.5, lng: 126.5 });
+  } else {
+    tripData.cafes.push({ name, lat: 33.5, lng: 126.5 });
+  }
+  saveAll();
+}
+
+function updatePlaceName(type, idx, val) {
+  if(type === 'restaurant') tripData.restaurants[idx].name = val;
+  else tripData.cafes[idx].name = val;
+  saveAll();
+}
+
+function removePlace(type, idx) {
+  if(type === 'restaurant') tripData.restaurants.splice(idx, 1);
+  else tripData.cafes.splice(idx, 1);
+  saveAll();
+}
+
+// --- 여행 경비 계산기 관리 ---
+function addExpenseItem() {
+  tripData.expenses.push({ name: "새 항목", cost: 0 });
+  saveAll();
+}
+
+function updateExpenseName(idx, val) {
+  tripData.expenses[idx].name = val;
+  saveAll();
+}
+
+function updateExpenseCost(idx, val) {
+  tripData.expenses[idx].cost = Number(val);
+  calc();
+  saveAll();
+}
+
+function removeExpense(idx) {
+  tripData.expenses.splice(idx, 1);
+  saveAll();
+}
+
+function calc() {
+  let total = 0;
+  tripData.expenses.forEach(ex => {
+    total += Number(ex.cost || 0);
+  });
+  document.getElementById("result").innerText = "예상 총 경비 : " + total.toLocaleString() + "원";
+}
+
+// --- 준비 체크리스트 관리 ---
+function addCheckItem() {
+  const nameInput = document.getElementById("newCheckItemName");
+  if(!nameInput.value) return;
+  tripData.checklist.push({ name: nameInput.value, checked: false });
+  nameInput.value = "";
+  saveAll();
+}
+
+function toggleCheckItem(idx) {
+  tripData.checklist[idx].checked = !tripData.checklist[idx].checked;
+  saveAll();
+}
+
+function updateCheckItemName(idx, val) {
+  tripData.checklist[idx].name = val;
+  saveAll();
+}
+
+function removeCheckItem(idx) {
+  tripData.checklist.splice(idx, 1);
+  saveAll();
+}
+
+// --- 가족 메모장 관리 ---
+function addMemoItem() {
+  tripData.memos.push({ text: "새로운 메모 내용을 입력하세요." });
+  saveAll();
+}
+
+function updateMemoText(idx, val) {
+  tripData.memos[idx].text = val;
+  saveAll();
+}
+
+function removeMemo(idx) {
+  tripData.memos.splice(idx, 1);
+  saveAll();
+}
+
+// 최초 실행
+renderAll();
 </script>
-
-</div>
 
 </body>
 </html>
-  
