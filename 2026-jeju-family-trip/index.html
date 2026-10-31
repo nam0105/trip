@@ -400,7 +400,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 각 일정의 <b>[+]</b> 버튼을 누르면 해당 일정 <b>바로 아래(앞쪽)</b>에 새 일정이 추가됩니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 구체적으로 적어주시면(예: <b>월정7길 28-14</b> 또는 <b>월정리해변</b>) 자동으로 좌표를 찾아 지도에 표시해 줍니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -445,8 +445,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V16<br>
-  일정 앞쪽(아래) 추가 기능 적용
+  제주 가족여행 Premium Planner V17<br>
+  정밀 위치 매칭 및 주소 동기화 강화
 </footer>
 
 <script type="module">
@@ -505,21 +505,25 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
   }
 });
 
-// --- 기본 좌표 매핑 ---
+// --- 정밀 제주 지역별 좌표 사전 (읍/면/동/주요 명소 기반) ---
 const presetCoords = {
+  "월정리": { lat: 33.5562, lng: 126.7958 },
+  "월정7길": { lat: 33.5545, lng: 126.7970 },
+  "구좌읍": { lat: 33.5250, lng: 126.8500 },
   "제주공항": { lat: 33.5066, lng: 126.4931 },
   "함덕해수욕장": { lat: 33.5432, lng: 126.6695 },
   "함덕": { lat: 33.5432, lng: 126.6695 },
   "비자림": { lat: 33.4912, lng: 126.8093 },
   "세화해변": { lat: 33.5250, lng: 126.8600 },
-  "월정리해변": { lat: 33.5562, lng: 126.7958 },
-  "월정리": { lat: 33.5562, lng: 126.7958 },
+  "세화": { lat: 33.5250, lng: 126.8600 },
   "제주4.3평화공원": { lat: 33.4485, lng: 126.6512 },
   "국립제주박물관": { lat: 33.5134, lng: 126.5482 },
   "사라봉전망대": { lat: 33.5180, lng: 126.5350 },
   "용담해안도로": { lat: 33.5120, lng: 126.4950 },
   "아쿠아플라넷제주": { lat: 33.4330, lng: 126.9270 },
   "성산일출봉": { lat: 33.4585, lng: 126.9423 },
+  "성산읍": { lat: 33.4380, lng: 126.9130 },
+  "성산": { lat: 33.4585, lng: 126.9423 },
   "섭지코지": { lat: 33.4241, lng: 126.9300 },
   "광치기해변": { lat: 33.4520, lng: 126.9240 },
   "도두봉": { lat: 33.5070, lng: 126.4670 },
@@ -529,15 +533,34 @@ const presetCoords = {
   "덤장함덕점": { lat: 33.5430, lng: 126.6690 },
   "성산해녀짬뽕": { lat: 33.4500, lng: 126.9200 },
   "카페진정성제주": { lat: 33.5300, lng: 126.3500 },
-  "카페공작소": { lat: 33.5250, lng: 126.8600 }
+  "카페공작소": { lat: 33.5250, lng: 126.8600 },
+  "애월": { lat: 33.4650, lng: 126.3150 },
+  "서귀포": { lat: 33.2541, lng: 126.5601 },
+  "중문": { lat: 33.2520, lng: 126.4240 }
 };
 
+// 입력된 주소/장소에서 키워드를 정밀 매칭하여 좌표 추정
 function guessCoords(text) {
-  for (let key in presetCoords) {
+  if (!text) return { lat: 33.4996, lng: 126.5312 };
+  
+  // 1. 정확히 일치하거나 포함되는 키워드 검색 (상세 키워드 우선)
+  let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
+  for (let key of sortedKeys) {
     if (text.includes(key)) {
       return presetCoords[key];
     }
   }
+  
+  // 2. 읍/면/동 단위 추가 매칭
+  if (text.includes("구좌")) return { lat: 33.5250, lng: 126.8500 };
+  if (text.includes("조천")) return { lat: 33.5350, lng: 126.6250 };
+  if (text.includes("애월")) return { lat: 33.4650, lng: 126.3150 };
+  if (text.includes("한림")) return { lat: 33.4140, lng: 126.2640 };
+  if (text.includes("표선")) return { lat: 33.3280, lng: 126.8320 };
+  if (text.includes("안덕")) return { lat: 33.2550, lng: 126.3080 };
+  if (text.includes("대정")) return { lat: 33.2230, lng: 126.2520 };
+
+  // 기본값 (제주시청 부근)
   return { lat: 33.4996, lng: 126.5312 };
 }
 
@@ -914,7 +937,7 @@ window.removeHotel = function(idx) {
 window.saveInfo = function() {
   tripData.arrival = document.getElementById("editArrival").value;
   tripData.departure = document.getElementById("editDeparture").value;
-  tripData.people = document.getElementById("editPeople").value;
+  tripdata.people = document.getElementById("editPeople").value;
   saveAll();
   window.toggleEditInfo();
 };
@@ -941,7 +964,6 @@ window.addDayItem = function(dIdx) {
   saveAll();
 };
 
-// 특정 일정 바로 앞(위)에 새 일정 삽입
 window.addDayItemBefore = function(dIdx, iIdx) {
   tripData.days[dIdx].items.splice(iIdx, 0, { text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
   saveAll();
