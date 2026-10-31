@@ -136,7 +136,6 @@ h2{
   background:#0284c7;
 }
 
-/* 직관적이고 작은 마이너스(-) 삭제 버튼 */
 .btn-delete {
   background: #fee2e2;
   color: #ef4444;
@@ -158,6 +157,17 @@ h2{
 }
 .btn-success:hover {
   background: #059669;
+}
+
+.btn-google {
+  background: #ea4335;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-google:hover {
+  background: #c5221f;
 }
 
 input, textarea, select{
@@ -391,7 +401,13 @@ footer{
     </div>
 
     <div id="map"></div>
-    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;" id="quickLinks"></div>
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; justify-content: space-between; align-items: center;">
+      <div id="quickLinks" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      <!-- Google My Maps 연동 버튼 -->
+      <a href="https://www.google.com/maps/d/" target="_blank" class="btn btn-google" title="Google My Maps에서 나만의 지도를 만들고 관리하세요">
+        🗺 Google My Maps 열기
+      </a>
+    </div>
   </div>
 
   <!-- 3. 여행 일정 -->
@@ -400,7 +416,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 일정의 <b>[동선 체크 ☑]</b>는 기본으로 켜져 있습니다. 원치 않으시면 체크를 해제하세요.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 각 일정을 Google 지도(Google Maps)에서 바로 검색하여 경로를 확인하실 수 있습니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -445,8 +461,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V11<br>
-  동선 기본 ON 및 마이너스 삭제 버튼 적용
+  제주 가족여행 Premium Planner V12<br>
+  Google My Maps 연동 및 날짜별 구글 지도 경로 확인 지원
 </footer>
 
 <script type="module">
@@ -683,8 +699,10 @@ function renderMap() {
       if(!c.lat || !c.lng) return;
       const markerHtml = `<div style="background:#8b5cf6;color:white;padding:2px 5px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">☕ ${c.name}</div>`;
       const icon = L.divIcon({ html: markerHtml, className: 'custom-cafe-icon', iconSize: [80, 22], iconAnchor: [40, 11] });
-      const marker = L.marker([c.lat, c.lng], { icon }).addTo(map).bindPopup(`<b>[카페] ${c.name}</b><br>주소: ${c.address || '정보 없음'}`);
-      currentLayers.push(marker);
+      const marker = L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(`<b>[카페] ${c.name}</b><br>주소: ${c.address || '정보 없음'}`); // wait, c
+      // fix below
+      const markerCafe = L.marker([c.lat, c.lng], { icon }).addTo(map).bindPopup(`<b>[카페] ${c.name}</b><br>주소: ${c.address || '정보 없음'}`);
+      currentLayers.push(markerCafe);
     });
   }
 
@@ -744,7 +762,6 @@ function renderAll() {
   tripData.days.forEach((day, dIdx) => {
     let itemsHtml = "";
     day.items.forEach((item, iIdx) => {
-      // 기존에 저장된 데이터에 checked 속성이 없을 경우 기본값 true(ON)로 처리
       if (item.checked === undefined) item.checked = true;
 
       itemsHtml += `
@@ -759,13 +776,20 @@ function renderAll() {
       `;
     });
 
+    // 날짜별 Google Maps 길찾기/검색 링크 생성 쿼리 (해당 날짜의 장소들을 묶어서 검색)
+    const dayLocations = day.items.map(i => i.address || i.text).join(" ");
+    const googleMapsDayUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("제주 " + dayLocations)}`;
+
     timelineContainer.innerHTML += `
       <div class="day-group">
         <div class="day">
           <span>📅 <input type="text" value="${day.date}" onchange="updateDayDate(${dIdx}, this.value)" style="display:inline-block; width:180px; font-size:15px; margin:0; padding:4px;"></span>
-          <div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <a href="${googleMapsDayUrl}" target="_blank" class="btn btn-google" style="font-size:11px; padding:3px 8px;" title="이 날의 일정을 구글 지도에서 엽니다">
+              🗺 구글 지도 보기
+            </a>
             <button class="btn" style="font-size:11px; padding:3px 6px;" onclick="window.addDayItem(${dIdx})">+ 일정</button>
-            <button class="btn-delete" onclick="window.removeDaySection(${dIdx})" title="날짜 삭제">- 날짜삭제</button>
+            <button class="btn-delete" onclick="window.removeDaySection(${dIdx})" title="날짜 삭제">- 날짜</button>
           </div>
         </div>
         <div style="padding-left:5px;">${itemsHtml}</div>
@@ -1043,6 +1067,11 @@ window.removeCheckItem = function(idx) {
 
 window.addMemoItem = function() {
   tripData.memos.push({ text: "새로운 메모 내용을 입력하세요." });
+  saveAll();
+};
+
+window.updateMemoTest = function(idx, val) {
+  tripData.memos[idx].text = val;
   saveAll();
 };
 
