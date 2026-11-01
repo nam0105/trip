@@ -114,7 +114,7 @@ h2{
 }
 
 #map{
-  height:450px;
+  height:480px;
   border-radius:12px;
   z-index: 1;
 }
@@ -418,6 +418,7 @@ footer{
       <button class="btn btn-success" style="padding:6px 14px; font-size:13px;" onclick="applyMapFilter()">적용</button>
     </div>
 
+    <p style="font-size:12px; color:#0284c7; margin:5px 0 10px 0;">💡 <b>안내:</b> 마커나 라벨을 <b>마우스로 드래그하여 지도 위에서 자유롭게 위치를 이동(미세 조정)</b>할 수 있습니다!</p>
     <div id="map"></div>
     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;" id="quickLinks"></div>
   </div>
@@ -428,7 +429,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 적어주시면(예: <b>소소한 하루</b>, <b>월정리</b>) 숙소 및 장소 위치와 정확히 동기화됩니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 적어주시면(예: <b>김녕미로공원</b>, <b>소소한 하루</b>) 실시간으로 주소가 좌표와 동기화됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -473,8 +474,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V24<br>
-  마커 겹침 방지 (방사형 오프셋 분산) 및 데이터 안전 유지 통합 적용
+  제주 가족여행 Premium Planner V25<br>
+  마커 드래그 이동(위치 커스텀) 및 김녕미로공원 등 주소 정밀 매칭 강화
 </footer>
 
 <script type="module">
@@ -534,8 +535,11 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
   }
 });
 
-// --- 정밀 제주 지역별 좌표 사전 ---
+// --- 김녕미로공원 등 정밀 제주 지역별 좌표 사전 ---
 const presetCoords = {
+  "김녕미로공원": { lat: 33.5583, lng: 126.7725 },
+  "구좌읍 일주동로 122": { lat: 33.5583, lng: 126.7725 },
+  "일주동로 122": { lat: 33.5583, lng: 126.7725 },
   "월정7길 28-14": { lat: 33.5545, lng: 126.7970 },
   "월정7길": { lat: 33.5545, lng: 126.7970 },
   "월정리": { lat: 33.5562, lng: 126.7958 },
@@ -696,15 +700,12 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }
 
 let currentLayers = [];
 
-// 동일 좌표 마커 겹침 방지 알고리즘 (방사형 미세 분산)
-function getDistributedCoords(lat, lng, index, total) {
-  if (total <= 1) return [lat, lng];
-  const angle = (index / total) * 2 * Math.PI;
-  const offset = 0.00018; // 약 20미터 간격 분산
-  return [
-    lat + Math.cos(angle) * offset,
-    lng + Math.sin(angle) * offset
-  ];
+// 1. 마커 드래그 기능 추가 (사용자가 지도 위에서 직접 마커를 움직여 위치 미세조정 가능)
+function makeDraggable(marker, updateCallback) {
+  marker.on('dragend', function(event) {
+    const position = marker.getLatLng();
+    updateCallback(position.lat, position.lng);
+  });
 }
 
 window.renderMap = function() {
@@ -721,31 +722,53 @@ window.renderMap = function() {
   let allMarkersData = [];
 
   if (showHotel) {
-    tripData.hotels.forEach(h => {
-      if(h.lat && h.lng) allMarkersData.push({ type: '숙소', name: h.name, desc: `주소: ${h.address || ''}<br>${h.nights}`, lat: h.lat, lng: h.lng, color: '#0284c7' });
+    tripData.hotels.forEach((h, hIdx) => {
+      if(h.lat && h.lng) {
+        allMarkersData.push({ 
+          type: '숙소', category: 'hotel', index: hIdx, 
+          name: h.name, desc: `주소: ${h.address || ''}<br>${h.nights}`, 
+          lat: h.lat, lng: h.lng, color: '#0284c7' 
+        });
+      }
     });
   }
   if (showRestaurant) {
-    tripData.restaurants.forEach(r => {
-      if(r.lat && r.lng) allMarkersData.push({ type: '맛집', name: r.name, desc: `주소: ${r.address || ''}`, lat: r.lat, lng: r.lng, color: '#f97316' });
+    tripData.restaurants.forEach((r, rIdx) => {
+      if(r.lat && r.lng) {
+        allMarkersData.push({ 
+          type: '맛집', category: 'restaurant', index: rIdx, 
+          name: r.name, desc: `주소: ${r.address || ''}`, 
+          lat: r.lat, lng: r.lng, color: '#f97316' 
+        });
+      }
     });
   }
   if (showCafe) {
-    tripData.cafes.forEach(c => {
-      if(c.lat && c.lng) allMarkersData.push({ type: '카페', name: c.name, desc: `주소: ${c.address || ''}`, lat: c.lat, lng: c.lng, color: '#8b5cf6' });
+    tripData.cafes.forEach((c, cIdx) => {
+      if(c.lat && c.lng) {
+        allMarkersData.push({ 
+          type: '카페', category: 'cafe', index: cIdx, 
+          name: c.name, desc: `주소: ${c.address || ''}`, 
+          lat: c.lat, lng: c.lng, color: '#8b5cf6' 
+        });
+      }
     });
   }
 
   tripData.days.forEach((day, dIdx) => {
     if (dayFilter !== "all" && dayFilter != dIdx) return;
-    day.items.forEach(item => {
+    day.items.forEach((item, iIdx) => {
       if(item.checked && item.lat && item.lng) {
-        allMarkersData.push({ type: '일정', name: item.text, desc: `[${day.date}] 주소: ${item.address || ''}`, lat: item.lat, lng: item.lng, color: '#0ea5e9' });
+        allMarkersData.push({ 
+          type: '일정', category: 'dayItem', dIdx: dIdx, iIdx: iIdx, 
+          name: item.text, desc: `[${day.date}] 주소: ${item.address || ''}`, 
+          lat: item.lat, lng: item.lng, color: '#0ea5e9' 
+        });
       }
     });
   });
 
-  // 좌표별 그룹화 (소수점 4자리 기준)
+  // 동일 좌표(소수점 4자리) 그룹화 후 방사형 오프셋 분산 (마커 겹침 방지)
   let coordGroups = {};
   allMarkersData.forEach(m => {
     const key = `${m.lat.toFixed(4)}_${m.lng.toFixed(4)}`;
@@ -758,7 +781,15 @@ window.renderMap = function() {
     const totalInGroup = group.length;
 
     group.forEach((m, idx) => {
-      const [dLat, dLng] = getDistributedCoords(m.lat, m.lng, idx, totalInGroup);
+      let dLat = m.lat;
+      let dLng = m.lng;
+
+      if (totalInGroup > 1) {
+        const angle = (idx / totalInGroup) * 2 * Math.PI;
+        const offset = 0.00022; // 약 25미터 간격 분산
+        dLat += Math.cos(angle) * offset;
+        dLng += Math.sin(angle) * offset;
+      }
 
       let badgeIcon = '';
       if(m.type === '숙소') badgeIcon = `🏠 ${m.name}`;
@@ -768,7 +799,28 @@ window.renderMap = function() {
 
       const markerHtml = `<div style="background:${m.color};color:white;padding:3px 8px;border-radius:15px;font-weight:bold;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;white-space:nowrap;">${badgeIcon}</div>`;
       const icon = L.divIcon({ html: markerHtml, className: 'custom-distributed-icon', iconSize: [110, 26], iconAnchor: [55, 13] });
-      const marker = L.marker([dLat, dLng], { icon }).addTo(map).bindPopup(`<b>[${m.type}] ${m.name}</b><br>${m.desc}`);
+      
+      // 드래그 가능한 마커 생성 (draggable: true)
+      const marker = L.marker([dLat, dLng], { icon, draggable: true }).addTo(map).bindPopup(`<b>[${m.type}] ${m.name}</b><br>${m.desc}<br><i style="font-size:10px;color:#666;">(마커를 드래그하여 위치를 직접 옮길 수 있습니다)</i>`);
+      
+      // 드래그 완료 시 해당 데이터의 GPS 좌표를 업데이트하고 저장
+      makeDraggable(marker, (newLat, newLng) => {
+        if (m.category === 'hotel') {
+          tripData.hotels[m.index].lat = newLat;
+          tripData.hotels[m.index].lng = newLng;
+        } else if (m.category === 'restaurant') {
+          tripData.restaurants[m.index].lat = newLat;
+          tripData.restaurants[m.index].lng = newLng;
+        } else if (m.category === 'cafe') {
+          tripData.cafes[m.index].lat = newLat;
+          tripData.cafes[m.index].lng = newLng;
+        } else if (m.category === 'dayItem') {
+          tripData.days[m.dIdx].items[m.iIdx].lat = newLat;
+          tripData.days[m.dIdx].items[m.iIdx].lng = newLng;
+        }
+        saveAll();
+      });
+
       currentLayers.push(marker);
 
       if(m.type === '숙소') {
