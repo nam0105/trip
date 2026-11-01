@@ -114,7 +114,7 @@ h2{
 }
 
 #map{
-  height:480px;
+  height:500px;
   border-radius:12px;
   z-index: 1;
 }
@@ -224,6 +224,26 @@ input, textarea, select{
   border: 1px solid #bae6fd;
 }
 
+/* 지도 이동 가능 라벨 스타일 */
+.draggable-label-box {
+  color: white;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: bold;
+  font-size: 11px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  cursor: grab;
+  white-space: nowrap;
+  user-select: none;
+  transition: transform 0.1s ease;
+  display: inline-block;
+  border: 1.5px solid rgba(255,255,255,0.8);
+}
+.draggable-label-box:active {
+  cursor: grabbing;
+  transform: scale(1.08);
+}
+
 /* 실시간 동기화 상태 표시 배너 */
 .sync-status {
   position: fixed;
@@ -291,7 +311,7 @@ footer{
 
 @media(max-width:768px){
   #map{
-    height:300px;
+    height:350px;
   }
 }
 </style>
@@ -410,7 +430,13 @@ footer{
       <button class="btn btn-success" style="padding:6px 14px; font-size:13px;" onclick="applyMapFilter()">적용</button>
     </div>
 
-    <p style="font-size:12px; color:#0284c7; margin:5px 0 10px 0;">💡 <b>안내:</b> 지도 위의 <b>점(마커)</b>을 드래그하여 위치를 자유롭게 조정할 수 있습니다.</p>
+    <div style="background:#f1f5f9; padding:8px 12px; border-radius:8px; margin-bottom:10px; font-size:12px; color:#334155; display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
+      <span>🔵 <b>장소 점:</b> 주소 기반 고정 위치</span>
+      <span>➖ <b>파란 점선:</b> 시간 순서 동선 경로</span>
+      <span>⋯ <b>회색 점선:</b> 장소와 내용 라벨 연결</span>
+      <span style="color:#0284c7; font-weight:bold;">💡 일정 내용 라벨을 마우스로 드래그하여 원하는 위치로 자유롭게 옮길 수 있습니다!</span>
+    </div>
+
     <div id="map"></div>
     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;" id="quickLinks"></div>
   </div>
@@ -421,7 +447,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주요 방문예정지나 장소명을 입력하여 일정을 자유롭게 구성하세요.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 입력하면 지도상의 정확한 위치에 <b>고정 점</b>이 찍히고, 일정 라벨이 회색 점선으로 연결됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -466,8 +492,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V27<br>
-  주요 방문예정지 정보 및 일정 연동 기능 추가
+  제주 가족여행 Premium Planner V28<br>
+  고정 점 & 이동 라벨 & 회색 점선 연결 구조 적용
 </footer>
 
 <script type="module">
@@ -529,8 +555,9 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
 
 // --- 김녕미로공원 등 정밀 제주 지역별 좌표 사전 ---
 const presetCoords = {
-  "김녕미로공원": { lat: 33.5583, lng: 126.7725 },
+  "김녕미로공원": { lat: 33.5358, lng: 126.7712 },
   "구좌읍 일주동로 122": { lat: 33.5583, lng: 126.7725 },
+  "일주동로 122": { lat: 33.5583, lng: 126.7725 },
   "성산일출봉": { lat: 33.4585, lng: 126.9423 },
   "아쿠아플라넷": { lat: 33.4330, lng: 126.9270 },
   "월정7길 28-14": { lat: 33.5545, lng: 126.7970 },
@@ -553,7 +580,7 @@ const presetCoords = {
   "섭지코지": { lat: 33.4241, lng: 126.9300 },
   "광치기해변": { lat: 33.4520, lng: 126.9240 },
   "도두봉": { lat: 33.5070, lng: 126.4670 },
-  "소소한 하루": { lat: 33.5150, lng: 126.8650 },
+  "소소한 하루": { lat: 33.5545, lng: 126.7970 },
   "맛나식당": { lat: 33.4600, lng: 126.9100 },
   "해녀의집": { lat: 33.5250, lng: 126.8600 },
   "덤장함덕점": { lat: 33.5430, lng: 126.6690 },
@@ -565,34 +592,68 @@ const presetCoords = {
   "중문": { lat: 33.2520, lng: 126.4240 }
 };
 
-function guessCoords(text, tripDataObj) {
-  if (!text) return { lat: 33.5562, lng: 126.7958 };
-  
+// OpenStreetMap Nominatim 비동기 주소 검색 + 사전 fallback
+async function geocodeAddress(query, tripDataObj) {
+  if (!query) return { lat: 33.5562, lng: 126.7958 };
+
+  // 1. 등록된 숙소 이름/주소 최우선 동기화
   if (tripDataObj && tripDataObj.hotels) {
     for (let h of tripDataObj.hotels) {
-      if (text.includes(h.name) || (h.address && text.includes(h.address))) {
+      if (query.includes(h.name) || (h.address && query.includes(h.address))) {
         if (h.lat && h.lng) {
           return { lat: h.lat, lng: h.lng };
         }
       }
     }
   }
-  
+
+  // 2. 정밀 사전 우선 검사
   let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
   for (let key of sortedKeys) {
-    if (text.includes(key)) {
+    if (query.includes(key)) {
       return presetCoords[key];
     }
   }
-  
-  if (text.includes("구좌")) return { lat: 33.5250, lng: 126.8500 };
-  if (text.includes("조천")) return { lat: 33.5350, lng: 126.6250 };
-  if (text.includes("애월")) return { lat: 33.4650, lng: 126.3150 };
-  if (text.includes("한림")) return { lat: 33.4140, lng: 126.2640 };
-  if (text.includes("표선")) return { lat: 33.3280, lng: 126.8320 };
-  if (text.includes("안덕")) return { lat: 33.2550, lng: 126.3080 };
-  if (text.includes("대정")) return { lat: 33.2230, lng: 126.2520 };
 
+  // 3. 실제 웹 주소 지오코딩 API 시도
+  try {
+    const cleanQuery = query.replace("특별자치도", "").trim();
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=kr&limit=1&q=${encodeURIComponent(cleanQuery)}`);
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch (e) {
+    console.warn("Geocoding fetch failed, falling back to keywords:", e);
+  }
+
+  // 4. 지역 키워드 fallback
+  if (query.includes("구좌")) return { lat: 33.5250, lng: 126.8500 };
+  if (query.includes("조천")) return { lat: 33.5350, lng: 126.6250 };
+  if (query.includes("애월")) return { lat: 33.4650, lng: 126.3150 };
+  if (query.includes("한림")) return { lat: 33.4140, lng: 126.2640 };
+  if (query.includes("성산")) return { lat: 33.4585, lng: 126.9423 };
+  if (query.includes("표선")) return { lat: 33.3280, lng: 126.8320 };
+  if (query.includes("안덕")) return { lat: 33.2550, lng: 126.3080 };
+  if (query.includes("대정")) return { lat: 33.2230, lng: 126.2520 };
+
+  return { lat: 33.5562, lng: 126.7958 };
+}
+
+function guessCoords(text, tripDataObj) {
+  // 동기식 사전 조회
+  if (!text) return { lat: 33.5562, lng: 126.7958 };
+  if (tripDataObj && tripDataObj.hotels) {
+    for (let h of tripDataObj.hotels) {
+      if (text.includes(h.name) || (h.address && text.includes(h.address))) {
+        if (h.lat && h.lng) return { lat: h.lat, lng: h.lng };
+      }
+    }
+  }
+  let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
+  for (let key of sortedKeys) {
+    if (text.includes(key)) return presetCoords[key];
+  }
   return { lat: 33.5562, lng: 126.7958 };
 }
 
@@ -604,64 +665,64 @@ const defaultTripData = {
   people: "4명",
   highlights: "비자림, 성산일출봉, 아쿠아플라넷",
   hotels: [
-    { name: "소소한 하루", nights: "2박", address: "제주시 구좌읍 해맞이해안로", lat: 33.515, lng: 126.865 },
+    { name: "소소한 하루", nights: "2박", address: "제주시 구좌읍 월정7길 28-14", lat: 33.5545, lng: 126.7970 },
     { name: "B숙소 (예시)", nights: "1박", address: "서귀포시 성산읍", lat: 33.430, lng: 126.920 }
   ],
   days: [
     {
       date: "12/25 (도착일)",
       items: [
-        { time: "13:00", text: "렌터카 수령", address: "제주공항", lat: 33.507, lng: 126.467, checked: true },
-        { time: "14:00", text: "함덕 점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
-        { time: "15:30", text: "비자림", address: "비자림", lat: 33.491, lng: 126.809, checked: true },
-        { time: "17:00", text: "세화해변", address: "세화해변", lat: 33.525, lng: 126.860, checked: true },
-        { time: "18:00", text: "월정리 카페거리", address: "월정리", lat: 33.556, lng: 126.795, checked: true }
+        { time: "13:00", text: "렌터카 수령", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true },
+        { time: "14:00", text: "함덕 점심", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695, checked: true },
+        { time: "15:30", text: "비자림", address: "비자림", lat: 33.4912, lng: 126.8093, checked: true },
+        { time: "17:00", text: "세화해변", address: "세화해변", lat: 33.5250, lng: 126.8600, checked: true },
+        { time: "18:00", text: "월정리 카페거리", address: "월정리", lat: 33.5562, lng: 126.7958, checked: true }
       ]
     },
     {
       date: "12/26 (역사 · 교육 Day)",
       items: [
-        { time: "09:30", text: "제주4.3평화공원", address: "제주4.3평화공원", lat: 33.448, lng: 126.651, checked: true },
-        { time: "12:30", text: "점심", address: "제주시내", lat: 33.513, lng: 126.548, checked: true },
-        { time: "14:00", text: "국립제주박물관", address: "국립제주박물관", lat: 33.513, lng: 126.548, checked: true },
-        { time: "16:30", text: "사라봉 전망대", address: "사라봉전망대", lat: 33.518, lng: 126.535, checked: true },
-        { time: "17:20", text: "용담해안도로 노을", address: "용담해안도로", lat: 33.512, lng: 126.495, checked: true }
+        { time: "09:30", text: "제주4.3평화공원", address: "제주4.3평화공원", lat: 33.4485, lng: 126.6512, checked: true },
+        { time: "12:30", text: "점심", address: "제주시내", lat: 33.5134, lng: 126.5482, checked: true },
+        { time: "14:00", text: "국립제주박물관", address: "국립제주박물관", lat: 33.5134, lng: 126.5482, checked: true },
+        { time: "16:30", text: "사라봉 전망대", address: "사라봉전망대", lat: 33.5180, lng: 126.5350, checked: true },
+        { time: "17:20", text: "용담해안도로 노을", address: "용담해안도로", lat: 33.5120, lng: 126.4950, checked: true }
       ]
     },
     {
       date: "12/27 (가족 체험 Day)",
       items: [
-        { time: "09:30", text: "아쿠아플라넷 제주", address: "아쿠아플라넷", lat: 33.433, lng: 126.927, checked: true },
-        { time: "13:00", text: "성산 점심", address: "성산일출봉", lat: 33.452, lng: 126.924, checked: true },
-        { time: "14:00", text: "섭지코지", address: "섭지코지", lat: 33.424, lng: 126.930, checked: true },
-        { time: "16:00", text: "광치기해변", address: "광치기해변", lat: 33.452, lng: 126.924, checked: true },
-        { time: "17:30", text: "성산 카페", address: "성산일출봉", lat: 33.460, lng: 126.932, checked: true }
+        { time: "09:30", text: "아쿠아플라넷 제주", address: "아쿠아플라넷", lat: 33.4330, lng: 126.9270, checked: true },
+        { time: "13:00", text: "성산 점심", address: "성산일출봉", lat: 33.4585, lng: 126.9423, checked: true },
+        { time: "14:00", text: "섭지코지", address: "섭지코지", lat: 33.4241, lng: 126.9300, checked: true },
+        { time: "16:00", text: "광치기해변", address: "광치기해변", lat: 33.4520, lng: 126.9240, checked: true },
+        { time: "17:30", text: "성산 카페", address: "성산일출봉", lat: 33.4585, lng: 126.9423, checked: true }
       ]
     },
     {
       date: "12/28 (귀가일)",
       items: [
-        { time: "09:30", text: "함덕해수욕장", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
-        { time: "11:30", text: "점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
-        { time: "13:00", text: "도두봉", address: "도두봉", lat: 33.507, lng: 126.467, checked: true },
-        { time: "14:20", text: "렌터카 반납", address: "제주공항", lat: 33.507, lng: 126.467, checked: true },
-        { time: "16:00", text: "김포행 출발", address: "제주공항", lat: 33.507, lng: 126.467, checked: true }
+        { time: "09:30", text: "함덕해수욕장", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695, checked: true },
+        { time: "11:30", text: "점심", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695, checked: true },
+        { time: "13:00", text: "도두봉", address: "도두봉", lat: 33.5070, lng: 126.4670, checked: true },
+        { time: "14:20", text: "렌터카 반납", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true },
+        { time: "16:00", text: "김포행 출발", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true }
       ]
     }
   ],
   restaurants: [
-    { name: "맛나식당 (성산)", address: "성산일출봉", lat: 33.460, lng: 126.910 },
-    { name: "해녀의집 (세화)", address: "세화해변", lat: 33.525, lng: 126.860 },
-    { name: "덤장 함덕점", address: "함덕해수욕장", lat: 33.543, lng: 126.669 },
-    { name: "성산 해녀짬뽕", address: "성산일출봉", lat: 33.450, lng: 126.920 },
-    { name: "전복마시문어마시", address: "월정리", lat: 33.550, lng: 126.800 }
+    { name: "맛나식당 (성산)", address: "성산일출봉", lat: 33.4600, lng: 126.9100 },
+    { name: "해녀의집 (세화)", address: "세화해변", lat: 33.5250, lng: 126.8600 },
+    { name: "덤장 함덕점", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695 },
+    { name: "성산 해녀짬뽕", address: "성산일출봉", lat: 33.4500, lng: 126.9200 },
+    { name: "전복마시문어마시", address: "월정리", lat: 33.5500, lng: 126.8000 }
   ],
   cafes: [
-    { name: "카페 진정성 제주", address: "제주공항", lat: 33.530, lng: 126.350 },
-    { name: "카페 공작소", address: "세화해변", lat: 33.525, lng: 126.860 },
-    { name: "카페 코지", address: "섭지코지", lat: 33.440, lng: 126.930 },
-    { name: "월정리 해변카페", address: "월정리", lat: 33.556, lng: 126.795 },
-    { name: "오드랑베이커리", address: "함덕해수욕장", lat: 33.543, lng: 126.669 }
+    { name: "카페 진정성 제주", address: "제주공항", lat: 33.5300, lng: 126.3500 },
+    { name: "카페 공작소", address: "세화해변", lat: 33.5250, lng: 126.8600 },
+    { name: "카페 코지", address: "섭지코지", lat: 33.4400, lng: 126.9300 },
+    { name: "월정리 해변카페", address: "월정리", lat: 33.5562, lng: 126.7958 },
+    { name: "오드랑베이커리", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695 }
   ],
   expenses: [
     { name: "렌터카", cost: 260000 },
@@ -693,13 +754,13 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }
 
 let currentLayers = [];
 
-function makeDraggable(marker, updateCallback) {
-  marker.on('dragend', function(event) {
-    const position = marker.getLatLng();
-    updateCallback(position.lat, position.lng);
-  });
-}
-
+// ==========================================
+// 🗺 지도 표시 로직
+// 1. 시간 순서로 장소 점들을 파란 점선으로 연결
+// 2. 장소 표시는 동그라미 실선 원형 점 (절대 안 움직임)
+// 3. 내용 라벨은 회색 점선으로 점과 연결되며, 사용자가 자유롭게 드래그 가능
+// 4. 주소 기반 정확한 좌표 배치
+// ==========================================
 window.renderMap = function() {
   currentLayers.forEach(layer => map.removeLayer(layer));
   currentLayers = [];
@@ -711,15 +772,17 @@ window.renderMap = function() {
   const quickLinksEl = document.getElementById("quickLinks");
   quickLinksEl.innerHTML = "";
 
-  let allMarkersData = [];
+  let allSpots = [];
 
   if (showHotel) {
     tripData.hotels.forEach((h, hIdx) => {
       if(h.lat && h.lng) {
-        allMarkersData.push({ 
+        allSpots.push({ 
           type: '숙소', category: 'hotel', index: hIdx, 
-          name: h.name, desc: `주소: ${h.address || ''}<br>${h.nights}`, 
-          lat: h.lat, lng: h.lng, color: '#0284c7' 
+          label: `🏠 ${h.name}`, desc: `주소: ${h.address || ''}<br>${h.nights}`, 
+          lat: h.lat, lng: h.lng, 
+          labelLat: h.labelLat, labelLng: h.labelLng,
+          color: '#0284c7' 
         });
       }
     });
@@ -727,10 +790,12 @@ window.renderMap = function() {
   if (showRestaurant) {
     tripData.restaurants.forEach((r, rIdx) => {
       if(r.lat && r.lng) {
-        allMarkersData.push({ 
+        allSpots.push({ 
           type: '맛집', category: 'restaurant', index: rIdx, 
-          name: r.name, desc: `주소: ${r.address || ''}`, 
-          lat: r.lat, lng: r.lng, color: '#f97316' 
+          label: `🍜 ${r.name}`, desc: `주소: ${r.address || ''}`, 
+          lat: r.lat, lng: r.lng, 
+          labelLat: r.labelLat, labelLng: r.labelLng,
+          color: '#f97316' 
         });
       }
     });
@@ -738,15 +803,18 @@ window.renderMap = function() {
   if (showCafe) {
     tripData.cafes.forEach((c, cIdx) => {
       if(c.lat && c.lng) {
-        allMarkersData.push({ 
+        allSpots.push({ 
           type: '카페', category: 'cafe', index: cIdx, 
-          name: c.name, desc: `주소: ${c.address || ''}`, 
-          lat: c.lat, lng: c.lng, color: '#8b5cf6' 
+          label: `☕ ${c.name}`, desc: `주소: ${c.address || ''}`, 
+          lat: c.lat, lng: c.lng, 
+          labelLat: c.labelLat, labelLng: c.labelLng,
+          color: '#8b5cf6' 
         });
       }
     });
   }
 
+  // 1. 시간 순서로 장소 점들을 수집하여 동선 점선(Polyline)으로 연결
   let routeCoords = [];
 
   tripData.days.forEach((day, dIdx) => {
@@ -755,87 +823,104 @@ window.renderMap = function() {
       if(item.checked && item.lat && item.lng) {
         routeCoords.push([item.lat, item.lng]);
 
-        allMarkersData.push({ 
+        allSpots.push({ 
           type: '일정', category: 'dayItem', dIdx: dIdx, iIdx: iIdx, 
-          name: `${item.time || ''} ${item.text}`.trim(), 
+          label: `${item.time ? item.time + ' ' : ''}${item.text}`.trim(), 
           desc: `[${day.date}] 주소: ${item.address || ''}`, 
-          lat: item.lat, lng: item.lng, color: '#0ea5e9' 
+          lat: item.lat, lng: item.lng, 
+          labelLat: item.labelLat, labelLng: item.labelLng,
+          color: '#0ea5e9' 
         });
       }
     });
   });
 
-  // 1. 선(동선) 먼저 독립적으로 표시
+  // 1-1. 파란색 동선 연결선 (시간 순서대로 장소 점을 연결)
   if(routeCoords.length > 1) {
-    const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 4, dashArray: '5, 5', opacity: 0.8 }).addTo(map);
+    const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 3.5, dashArray: '6, 6', opacity: 0.85 }).addTo(map);
     currentLayers.push(polyline);
   }
 
-  // 2. 주소 정보 점(마커) 표시 (겹침 방지 및 드래그 이동 가능)
-  let coordGroups = {};
-  allMarkersData.forEach(m => {
-    const key = `${m.lat.toFixed(4)}_${m.lng.toFixed(4)}`;
-    if(!coordGroups[key]) coordGroups[key] = [];
-    coordGroups[key].push(m);
-  });
+  // 2. 장소 고정 점(움직이지 않음) & 내용 라벨(드래그 가능) & 회색 연결 점선
+  allSpots.forEach((spot, sIdx) => {
+    const spotLatLng = [spot.lat, spot.lng];
 
-  Object.keys(coordGroups).forEach(key => {
-    const group = coordGroups[key];
-    const totalInGroup = group.length;
+    // (1) 장소의 고정 원형 실선 점 (절대 움직이지 않음)
+    const circleDot = L.circleMarker(spotLatLng, {
+      radius: 6,
+      color: spot.color,
+      fillColor: '#ffffff',
+      fillOpacity: 1,
+      weight: 2.5,
+      interactive: true
+    }).addTo(map);
+    circleDot.bindPopup(`<b>[${spot.type}] ${spot.label}</b><br>${spot.desc}`);
+    currentLayers.push(circleDot);
 
-    group.forEach((m, idx) => {
-      let dLat = m.lat;
-      let dLng = m.lng;
+    // (2) 내용 라벨 위치 계산 (사용자가 드래그해서 저장한 위치가 있으면 사용, 없으면 약간 위/오른쪽으로 오프셋)
+    const defaultOffsetLat = 0.0025 + (sIdx % 3) * 0.001;
+    const defaultOffsetLng = 0.0035 + (sIdx % 2) * 0.0015;
+    const initialLabelLat = (spot.labelLat !== undefined) ? spot.labelLat : (spot.lat + defaultOffsetLat);
+    const initialLabelLng = (spot.labelLng !== undefined) ? spot.labelLng : (spot.lng + defaultOffsetLng);
+    const labelLatLng = [initialLabelLat, initialLabelLng];
 
-      if (totalInGroup > 1) {
-        const angle = (idx / totalInGroup) * 2 * Math.PI;
-        const offset = 0.00022; 
-        dLat += Math.cos(angle) * offset;
-        dLng += Math.sin(angle) * offset;
-      }
+    // (3) 장소 점과 라벨을 잇는 회색 점선 (Leader Line)
+    const leaderLine = L.polyline([spotLatLng, labelLatLng], {
+      color: '#94a3b8',
+      weight: 1.5,
+      dashArray: '3, 4',
+      opacity: 0.85
+    }).addTo(map);
+    currentLayers.push(leaderLine);
 
-      let badgeIcon = '';
-      if(m.type === '숙소') badgeIcon = `🏠 ${m.name}`;
-      else if(m.type === '맛집') badgeIcon = `🍜 ${m.name}`;
-      else if(m.type === '카페') badgeIcon = `☕ ${m.name}`;
-      else badgeIcon = `📍 ${m.name}`;
+    // (4) 일정 내용 라벨 마커 (사용자가 자유롭게 드래그하여 움직일 수 있음)
+    const labelHtml = `<div class="draggable-label-box" style="background:${spot.color};">${spot.label}</div>`;
+    const labelIcon = L.divIcon({ html: labelHtml, className: 'custom-text-label-icon', iconSize: [110, 26], iconAnchor: [55, 13] });
+    
+    const labelMarker = L.marker(labelLatLng, { icon: labelIcon, draggable: true }).addTo(map);
+    labelMarker.bindPopup(`<b>[${spot.type}] ${spot.label}</b><br>${spot.desc}<br><i style="font-size:10px;color:#666;">(라벨을 드래그하여 원하는 위치로 배치할 수 있습니다)</i>`);
 
-      const markerHtml = `<div style="background:${m.color};color:white;padding:3px 8px;border-radius:15px;font-weight:bold;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;white-space:nowrap;">${badgeIcon}</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-distributed-icon', iconSize: [110, 26], iconAnchor: [55, 13] });
-      
-      const marker = L.marker([dLat, dLng], { icon, draggable: true }).addTo(map).bindPopup(`<b>[${m.type}] ${m.name}</b><br>${m.desc}<br><i style="font-size:10px;color:#666;">(마커를 드래그하여 위치를 직접 수정할 수 있습니다)</i>`);
-      
-      makeDraggable(marker, (newLat, newLng) => {
-        if (m.category === 'hotel') {
-          tripData.hotels[m.index].lat = newLat;
-          tripData.hotels[m.index].lng = newLng;
-        } else if (m.category === 'restaurant') {
-          tripData.restaurants[m.index].lat = newLat;
-          tripData.restaurants[m.index].lng = newLng;
-        } else if (m.category === 'cafe') {
-          tripData.cafes[m.index].lat = newLat;
-          tripData.cafes[m.index].lng = newLng;
-        } else if (m.category === 'dayItem') {
-          tripData.days[m.dIdx].items[m.iIdx].lat = newLat;
-          tripData.days[m.dIdx].items[m.iIdx].lng = newLng;
-        }
-        saveAll();
-      });
-
-      currentLayers.push(marker);
-
-      if(m.type === '숙소') {
-        const btn = document.createElement("a");
-        btn.className = "btn";
-        btn.style.background = "#0284c7";
-        btn.style.fontSize = "12px";
-        btn.style.padding = "5px 8px";
-        btn.target = "_blank";
-        btn.href = `https://maps.google.com/?q=${encodeURIComponent(m.name + ' ')}`;
-        btn.innerText = `🏠 ${m.name}`;
-        quickLinksEl.appendChild(btn);
-      }
+    // 드래그 중: 회색 점선이 라벨의 움직임을 실시간으로 따라감
+    labelMarker.on('drag', function(e) {
+      const curPos = labelMarker.getLatLng();
+      leaderLine.setLatLngs([spotLatLng, curPos]);
     });
+
+    // 드래그 완료: 변경된 라벨 위치를 저장하여 영구 유지
+    labelMarker.on('dragend', function(e) {
+      const finalPos = labelMarker.getLatLng();
+      leaderLine.setLatLngs([spotLatLng, finalPos]);
+
+      if (spot.category === 'hotel') {
+        tripData.hotels[spot.index].labelLat = finalPos.lat;
+        tripData.hotels[spot.index].labelLng = finalPos.lng;
+      } else if (spot.category === 'restaurant') {
+        tripData.restaurants[spot.index].labelLat = finalPos.lat;
+        tripData.restaurants[spot.index].labelLng = finalPos.lng;
+      } else if (spot.category === 'cafe') {
+        tripData.cafes[spot.index].labelLat = finalPos.lat;
+        tripData.cafes[spot.index].labelLng = finalPos.lng;
+      } else if (spot.category === 'dayItem') {
+        tripData.days[spot.dIdx].items[spot.iIdx].labelLat = finalPos.lat;
+        tripData.days[spot.dIdx].items[spot.iIdx].labelLng = finalPos.lng;
+      }
+      saveAll();
+    });
+
+    currentLayers.push(labelMarker);
+
+    // 숙소 퀵 링크 버튼
+    if(spot.type === '숙소') {
+      const btn = document.createElement("a");
+      btn.className = "btn";
+      btn.style.background = "#0284c7";
+      btn.style.fontSize = "12px";
+      btn.style.padding = "5px 8px";
+      btn.target = "_blank";
+      btn.href = `https://maps.google.com/?q=${encodeURIComponent(spot.label + ' ')}`;
+      btn.innerText = spot.label;
+      quickLinksEl.appendChild(btn);
+    }
   });
 };
 
@@ -1111,19 +1196,19 @@ window.addHotelInput = function() {
   renderHotelEditList();
 };
 
-window.updateHotel = function(idx, field, val) {
+window.updateHotel = async function(idx, field, val) {
   tripData.hotels[idx][field] = val;
   if(field === 'name' || field === 'address') {
-    const coords = guessCoords(val, tripData);
+    const coords = await geocodeAddress(val, tripData);
     tripData.hotels[idx].lat = coords.lat;
     tripData.hotels[idx].lng = coords.lng;
   }
   saveAll();
 };
 
-window.updateHotelAddress = function(idx, val) {
+window.updateHotelAddress = async function(idx, val) {
   tripData.hotels[idx].address = val;
-  const coords = guessCoords(val + ' ' + tripData.hotels[idx].name, tripData);
+  const coords = await geocodeAddress(val + ' ' + tripData.hotels[idx].name, tripData);
   tripData.hotels[idx].lat = coords.lat;
   tripData.hotels[idx].lng = coords.lng;
   saveAll();
@@ -1180,16 +1265,23 @@ window.updateItemTime = function(dIdx, iIdx, val) {
   saveAll();
 };
 
-window.updateItemText = function(dIdx, iIdx, val) {
+window.updateItemText = async function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].text = val;
+  const coords = await geocodeAddress(val + ' ' + (tripData.days[dIdx].items[iIdx].address || ''), tripData);
+  if (coords) {
+    tripData.days[dIdx].items[iIdx].lat = coords.lat;
+    tripData.days[dIdx].items[iIdx].lng = coords.lng;
+  }
   saveAll();
 };
 
-window.updateItemAddress = function(dIdx, iIdx, val) {
+window.updateItemAddress = async function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].address = val;
-  const coords = guessCoords(val + ' ' + tripData.days[dIdx].items[iIdx].text, tripData);
-  tripData.days[dIdx].items[iIdx].lat = coords.lat;
-  tripData.days[dIdx].items[iIdx].lng = coords.lng;
+  const coords = await geocodeAddress(val + ' ' + tripData.days[dIdx].items[iIdx].text, tripData);
+  if (coords) {
+    tripData.days[dIdx].items[iIdx].lat = coords.lat;
+    tripData.days[dIdx].items[iIdx].lng = coords.lng;
+  }
   saveAll();
 };
 
@@ -1198,10 +1290,10 @@ window.toggleItemCheck = function(dIdx, iIdx) {
   saveAll();
 };
 
-window.addPlaceItem = function(type) {
+window.addPlaceItem = async function(type) {
   const name = prompt(type === 'restaurant' ? "추가할 맛집 이름" : "추가할 카페 이름");
   if(!name) return;
-  const coords = guessCoords(name, tripData);
+  const coords = await geocodeAddress(name, tripData);
   if(type === 'restaurant') {
     tripData.restaurants.push({ name, address: name, lat: coords.lat, lng: coords.lng });
   } else {
@@ -1210,13 +1302,15 @@ window.addPlaceItem = function(type) {
   saveAll();
 };
 
-window.updatePlace = function(type, idx, field, val) {
+window.updatePlace = async function(type, idx, field, val) {
   const list = type === 'restaurant' ? tripData.restaurants : tripData.cafes;
   list[idx][field] = val;
   if(field === 'name' || field === 'address') {
-    const coords = guessCoords(list[idx].name + ' ' + (list[idx].address || ''), tripData);
-    list[idx].lat = coords.lat;
-    list[idx].lng = coords.lng;
+    const coords = await geocodeAddress(list[idx].name + ' ' + (list[idx].address || ''), tripData);
+    if(coords) {
+      list[idx].lat = coords.lat;
+      list[idx].lng = coords.lng;
+    }
   }
   saveAll();
 };
@@ -1294,13 +1388,12 @@ window.removeMemo = function(idx) {
   saveAll();
 };
 
-// --- 앱 초기화 및 실시간 리스너 바인딩 ---
+// --- 앱 초기화 및 실시간 리스너 바인딩 (데이터 100% 안전 유지) ---
 function initApp() {
   onSnapshot(tripDocRef, async (snapshot) => {
     if (snapshot.exists()) {
       const remoteData = snapshot.data();
       if (remoteData && remoteData.days && remoteData.days.length > 0) {
-        // 하위 호환: items에 time 필드가 없으면 분리
         remoteData.days.forEach(day => {
           day.items.forEach(item => {
             if (!item.time) {
