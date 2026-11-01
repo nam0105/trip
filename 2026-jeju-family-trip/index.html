@@ -335,7 +335,10 @@ footer{
 </div>
 
 <header>
-  <h1 id="headerTitle">🏝 제주 가족여행 Planner</h1>
+  <h1 id="headerTitle" style="display:inline-flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap;">
+    <span>🏝 제주 가족여행 Planner</span>
+    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.0</span>
+  </h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
   <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
     <button class="btn" style="font-size:12px; padding:4px 10px; background:rgba(255,255,255,0.25);" onclick="toggleEditHeader()">✏ 제목/설명 편집</button>
@@ -503,8 +506,7 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V28<br>
-  고정 점 & 이동 라벨 & 회색 점선 연결 구조 적용
+  제주 가족여행 Planner
 </footer>
 
 <script type="module">
