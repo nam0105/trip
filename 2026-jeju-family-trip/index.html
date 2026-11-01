@@ -357,7 +357,6 @@ footer{
 
     <label>저장된 버전 목록</label>
     <div id="versionListContainer" style="max-height:180px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:8px; margin-bottom:15px; background:#f8fafc;">
-      <!-- 버전 목록 -->
     </div>
 
     <button class="btn btn-danger" style="width:100%; font-size:13px;" onclick="closeVersionModal()">닫기</button>
@@ -474,8 +473,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V21<br>
-  커스텀 버전(스냅샷) 저장 및 불러오기 기능 추가
+  제주 가족여행 Premium Planner V24<br>
+  마커 겹침 방지 (방사형 오프셋 분산) 및 데이터 안전 유지 통합 적용
 </footer>
 
 <script type="module">
@@ -697,6 +696,17 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }
 
 let currentLayers = [];
 
+// 동일 좌표 마커 겹침 방지 알고리즘 (방사형 미세 분산)
+function getDistributedCoords(lat, lng, index, total) {
+  if (total <= 1) return [lat, lng];
+  const angle = (index / total) * 2 * Math.PI;
+  const offset = 0.00018; // 약 20미터 간격 분산
+  return [
+    lat + Math.cos(angle) * offset,
+    lng + Math.sin(angle) * offset
+  ];
+}
+
 window.renderMap = function() {
   currentLayers.forEach(layer => map.removeLayer(layer));
   currentLayers = [];
@@ -708,57 +718,79 @@ window.renderMap = function() {
   const quickLinksEl = document.getElementById("quickLinks");
   quickLinksEl.innerHTML = "";
 
+  let allMarkersData = [];
+
   if (showHotel) {
     tripData.hotels.forEach(h => {
-      if(!h.lat || !h.lng) return;
-      const markerHtml = `<div style="background:#0284c7;color:white;padding:4px 6px;border-radius:15px;font-weight:bold;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;">🏠 ${h.name} (${h.nights})</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-hotel-icon', iconSize: [100, 26], iconAnchor: [50, 13] });
-      const marker = L.marker([h.lat, h.lng], { icon }).addTo(map).bindPopup(`<b>[숙소] ${h.name}</b><br>주소: ${h.address || '정보 없음'}<br>${h.nights}`);
-      currentLayers.push(marker);
-
-      const btn = document.createElement("a");
-      btn.className = "btn";
-      btn.style.background = "#0284c7";
-      btn.style.fontSize = "12px";
-      btn.style.padding = "5px 8px";
-      btn.target = "_blank";
-      btn.href = `https://maps.google.com/?q=${encodeURIComponent(h.name + ' ' + (h.address || ''))}`;
-      btn.innerText = `🏠 ${h.name}`;
-      quickLinksEl.appendChild(btn);
+      if(h.lat && h.lng) allMarkersData.push({ type: '숙소', name: h.name, desc: `주소: ${h.address || ''}<br>${h.nights}`, lat: h.lat, lng: h.lng, color: '#0284c7' });
     });
   }
-
   if (showRestaurant) {
     tripData.restaurants.forEach(r => {
-      if(!r.lat || !r.lng) return;
-      const markerHtml = `<div style="background:#f97316;color:white;padding:2px 5px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">🍜 ${r.name}</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-rest-icon', iconSize: [80, 22], iconAnchor: [40, 11] });
-      const marker = L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(`<b>[맛집] ${r.name}</b><br>주소: ${r.address || '정보 없음'}`);
-      currentLayers.push(marker);
+      if(r.lat && r.lng) allMarkersData.push({ type: '맛집', name: r.name, desc: `주소: ${r.address || ''}`, lat: r.lat, lng: r.lng, color: '#f97316' });
+    });
+  }
+  if (showCafe) {
+    tripData.cafes.forEach(c => {
+      if(c.lat && c.lng) allMarkersData.push({ type: '카페', name: c.name, desc: `주소: ${c.address || ''}`, lat: c.lat, lng: c.lng, color: '#8b5cf6' });
     });
   }
 
-  if (showCafe) {
-    tripData.cafes.forEach(c => {
-      if(!c.lat || !c.lng) return;
-      const markerHtml = `<div style="background:#8b5cf6;color:white;padding:2px 5px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2);">☕ ${c.name}</div>`;
-      const icon = L.divIcon({ html: markerHtml, className: 'custom-cafe-icon', iconSize: [80, 22], iconAnchor: [40, 11] });
-      const marker = L.marker([c.lat, c.lng], { icon }).addTo(map).bindPopup(`<b>[카페] ${c.name}</b><br>주소: ${c.address || '정보 없음'}`);
-      currentLayers.push(marker);
+  tripData.days.forEach((day, dIdx) => {
+    if (dayFilter !== "all" && dayFilter != dIdx) return;
+    day.items.forEach(item => {
+      if(item.checked && item.lat && item.lng) {
+        allMarkersData.push({ type: '일정', name: item.text, desc: `[${day.date}] 주소: ${item.address || ''}`, lat: item.lat, lng: item.lng, color: '#0ea5e9' });
+      }
     });
-  }
+  });
+
+  // 좌표별 그룹화 (소수점 4자리 기준)
+  let coordGroups = {};
+  allMarkersData.forEach(m => {
+    const key = `${m.lat.toFixed(4)}_${m.lng.toFixed(4)}`;
+    if(!coordGroups[key]) coordGroups[key] = [];
+    coordGroups[key].push(m);
+  });
+
+  Object.keys(coordGroups).forEach(key => {
+    const group = coordGroups[key];
+    const totalInGroup = group.length;
+
+    group.forEach((m, idx) => {
+      const [dLat, dLng] = getDistributedCoords(m.lat, m.lng, idx, totalInGroup);
+
+      let badgeIcon = '';
+      if(m.type === '숙소') badgeIcon = `🏠 ${m.name}`;
+      else if(m.type === '맛집') badgeIcon = `🍜 ${m.name}`;
+      else if(m.type === '카페') badgeIcon = `☕ ${m.name}`;
+      else badgeIcon = `📍 ${m.name}`;
+
+      const markerHtml = `<div style="background:${m.color};color:white;padding:3px 8px;border-radius:15px;font-weight:bold;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;white-space:nowrap;">${badgeIcon}</div>`;
+      const icon = L.divIcon({ html: markerHtml, className: 'custom-distributed-icon', iconSize: [110, 26], iconAnchor: [55, 13] });
+      const marker = L.marker([dLat, dLng], { icon }).addTo(map).bindPopup(`<b>[${m.type}] ${m.name}</b><br>${m.desc}`);
+      currentLayers.push(marker);
+
+      if(m.type === '숙소') {
+        const btn = document.createElement("a");
+        btn.className = "btn";
+        btn.style.background = "#0284c7";
+        btn.style.fontSize = "12px";
+        btn.style.padding = "5px 8px";
+        btn.target = "_blank";
+        btn.href = `https://maps.google.com/?q=${encodeURIComponent(m.name + ' ')}`;
+        btn.innerText = `🏠 ${m.name}`;
+        quickLinksEl.appendChild(btn);
+      }
+    });
+  });
 
   let routeCoords = [];
   tripData.days.forEach((day, dIdx) => {
     if (dayFilter !== "all" && dayFilter != dIdx) return;
-
     day.items.forEach(item => {
       if(item.checked && item.lat && item.lng) {
         routeCoords.push([item.lat, item.lng]);
-        const markerHtml = `<div style="background:#0ea5e9;color:white;padding:2px 6px;border-radius:12px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,0.2); font-weight:bold;">📍 ${item.text}</div>`;
-        const icon = L.divIcon({ html: markerHtml, className: 'custom-item-icon', iconSize: [100, 22], iconAnchor: [50, 11] });
-        const marker = L.marker([item.lat, item.lng], { icon }).addTo(map).bindPopup(`<b>[${day.date}] ${item.text}</b><br>위치: ${item.address || '직접 입력됨'}`);
-        currentLayers.push(marker);
       }
     });
   });
@@ -1217,11 +1249,17 @@ window.removeMemo = function(idx) {
   saveAll();
 };
 
-// --- 앱 초기화 및 실시간 리스너 바인딩 ---
+// --- 앱 초기화 및 실시간 리스너 바인딩 (데이터 100% 안전 유지) ---
 function initApp() {
   onSnapshot(tripDocRef, async (snapshot) => {
     if (snapshot.exists()) {
-      tripData = snapshot.data();
+      const remoteData = snapshot.data();
+      if (remoteData && remoteData.days && remoteData.days.length > 0) {
+        tripData = remoteData;
+      } else {
+        tripData = defaultTripData;
+        await setDoc(tripDocRef, defaultTripData);
+      }
       renderAll();
     } else {
       await setDoc(tripDocRef, defaultTripData);
