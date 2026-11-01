@@ -449,6 +449,16 @@ footer{
     </h2>
     <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 입력하면 지도상의 정확한 위치에 <b>고정 점</b>이 찍히고, 일정 라벨이 회색 점선으로 연결됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
+
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:12px 15px; border-radius:10px; margin-top:15px; font-size:13px; line-height:1.6; color:#166534;">
+      <strong style="font-size:14px; color:#15803d;">💡 [일정 & 주소/장소 입력 Tip]</strong>
+      <ul style="margin:6px 0 0 0; padding-left:20px;">
+        <li><b>시간:</b> 방문 시간 (예: <code>13:00</code>, <code>09:30</code>)을 적어주세요.</li>
+        <li><b>일정 내용:</b> 하실 활동 (예: <code>렌터카 수령</code>, <code>점심 식사</code>, <code>산책</code>)을 적어주세요.</li>
+        <li><b>장소/주소:</b> 도로명 주소(예: <code>만장굴길 122</code>, <code>월정7길 28-14</code>)나 주요 지명/마을 이름(예: <code>김녕미로공원</code>, <code>월정리</code>, <code>소소한 하루</code>)을 적어주시면 지도 위의 실제 위치에 <b>고정 점(원)</b>이 정확히 찍힙니다!</li>
+        <li><b>위치 미세 조정:</b> 지도에 표시된 일정 라벨은 <b>마우스로 드래그</b>하여 원하는 위치로 자유롭게 이동시킬 수 있습니다.</li>
+      </ul>
+    </div>
   </div>
 
   <!-- 4. 추천 맛집 & 카페 -->
@@ -637,12 +647,28 @@ const presetCoords = {
   "송악산": { lat: 33.2030, lng: 126.2900 },
 
   // 맛집 및 카페
-  "맛나식당": { lat: 33.4600, lng: 126.9100 },
-  "해녀의집": { lat: 33.5250, lng: 126.8600 },
-  "덤장함덕점": { lat: 33.5430, lng: 126.6690 },
-  "성산해녀짬뽕": { lat: 33.4500, lng: 126.9200 },
-  "카페진정성제주": { lat: 33.5300, lng: 126.3500 },
-  "카페공작소": { lat: 33.5250, lng: 126.8600 }
+  "맛나식당": { lat: 33.4619, lng: 126.9185 },
+  "동류암로 41": { lat: 33.4619, lng: 126.9185 },
+  "해녀의집": { lat: 33.5255, lng: 126.8615 },
+  "해맞이해안로 1403": { lat: 33.5255, lng: 126.8615 },
+  "덤장": { lat: 33.5430, lng: 126.6695 },
+  "덤장함덕점": { lat: 33.5430, lng: 126.6695 },
+  "조함해안로 530": { lat: 33.5430, lng: 126.6695 },
+  "성산해녀짬뽕": { lat: 33.4628, lng: 126.9328 },
+  "일출로 286": { lat: 33.4628, lng: 126.9328 },
+  "전복마시문어마시": { lat: 33.5558, lng: 126.7935 },
+  "해맞이해안로 460": { lat: 33.5558, lng: 126.7935 },
+  "카페진정성제주": { lat: 33.5097, lng: 126.4760 },
+  "카페 진정성": { lat: 33.5097, lng: 126.4760 },
+  "서해안로 372": { lat: 33.5097, lng: 126.4760 },
+  "카페공작소": { lat: 33.5252, lng: 126.8605 },
+  "해맞이해안로 1446": { lat: 33.5252, lng: 126.8605 },
+  "카페코지": { lat: 33.4545, lng: 126.9248 },
+  "카페 코지": { lat: 33.4545, lng: 126.9248 },
+  "한도로 200": { lat: 33.4545, lng: 126.9248 },
+  "월정리 해변카페": { lat: 33.5562, lng: 126.7958 },
+  "오드랑베이커리": { lat: 33.5422, lng: 126.6685 },
+  "조함해안로 552-3": { lat: 33.5422, lng: 126.6685 },
 };
 
 // 지능형 주소 및 키워드 지오코딩
@@ -765,18 +791,18 @@ const defaultTripData = {
     }
   ],
   restaurants: [
-    { name: "맛나식당 (성산)", address: "성산일출봉", lat: 33.4600, lng: 126.9100 },
-    { name: "해녀의집 (세화)", address: "세화해변", lat: 33.5250, lng: 126.8600 },
-    { name: "덤장 함덕점", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695 },
-    { name: "성산 해녀짬뽕", address: "성산일출봉", lat: 33.4500, lng: 126.9200 },
-    { name: "전복마시문어마시", address: "월정리", lat: 33.5500, lng: 126.8000 }
+    { name: "맛나식당 (성산)", address: "성산읍 동류암로 41", lat: 33.4619, lng: 126.9185 },
+    { name: "해녀의집 (세화)", address: "구좌읍 해맞이해안로 1403", lat: 33.5255, lng: 126.8615 },
+    { name: "덤장 함덕점", address: "조천읍 조함해안로 530", lat: 33.5430, lng: 126.6695 },
+    { name: "성산 해녀짬뽕", address: "성산읍 일출로 286", lat: 33.4628, lng: 126.9328 },
+    { name: "전복마시문어마시", address: "구좌읍 해맞이해안로 460", lat: 33.5558, lng: 126.7935 }
   ],
   cafes: [
-    { name: "카페 진정성 제주", address: "제주공항", lat: 33.5300, lng: 126.3500 },
-    { name: "카페 공작소", address: "세화해변", lat: 33.5250, lng: 126.8600 },
-    { name: "카페 코지", address: "섭지코지", lat: 33.4400, lng: 126.9300 },
-    { name: "월정리 해변카페", address: "월정리", lat: 33.5562, lng: 126.7958 },
-    { name: "오드랑베이커리", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695 }
+    { name: "카페 진정성 제주", address: "제주시 서해안로 372", lat: 33.5097, lng: 126.4760 },
+    { name: "카페 공작소", address: "구좌읍 해맞이해안로 1446", lat: 33.5252, lng: 126.8605 },
+    { name: "카페 코지", address: "성산읍 한도로 200", lat: 33.4545, lng: 126.9248 },
+    { name: "월정리 해변카페", address: "구좌읍 월정리 해맞이해안로", lat: 33.5562, lng: 126.7958 },
+    { name: "오드랑베이커리", address: "조천읍 조함해안로 552-3", lat: 33.5422, lng: 126.6685 }
   ],
   expenses: [
     { name: "렌터카", cost: 260000 },
@@ -1461,6 +1487,29 @@ function initApp() {
             }
           });
         });
+        // 맛집 및 카페 최신 정밀 GPS 좌표 자동 보정
+        if (remoteData.restaurants) {
+          remoteData.restaurants.forEach(r => {
+            for (let key in presetCoords) {
+              if (r.name.includes(key)) {
+                r.lat = presetCoords[key].lat;
+                r.lng = presetCoords[key].lng;
+                break;
+              }
+            }
+          });
+        }
+        if (remoteData.cafes) {
+          remoteData.cafes.forEach(c => {
+            for (let key in presetCoords) {
+              if (c.name.includes(key)) {
+                c.lat = presetCoords[key].lat;
+                c.lng = presetCoords[key].lng;
+                break;
+              }
+            }
+          });
+        }
         tripData = remoteData;
       } else {
         tripData = defaultTripData;
