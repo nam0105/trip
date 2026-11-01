@@ -108,7 +108,7 @@ h2{
   padding:6px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   border-bottom: 1px dashed #eee;
   flex-wrap: nowrap;
 }
@@ -174,11 +174,6 @@ input, textarea, select{
   margin-top:4px;
   margin-bottom:4px;
   font-size: 14px;
-}
-
-.item input[type="text"] {
-  font-size: 13px;
-  padding: 6px 8px;
 }
 
 .total{
@@ -298,13 +293,6 @@ footer{
   #map{
     height:300px;
   }
-  .item {
-    gap: 5px;
-  }
-  .item input[type="text"] {
-    font-size: 12px;
-    padding: 5px;
-  }
 }
 </style>
 </head>
@@ -418,7 +406,7 @@ footer{
       <button class="btn btn-success" style="padding:6px 14px; font-size:13px;" onclick="applyMapFilter()">적용</button>
     </div>
 
-    <p style="font-size:12px; color:#0284c7; margin:5px 0 10px 0;">💡 <b>안내:</b> 마커나 라벨을 <b>마우스로 드래그하여 지도 위에서 자유롭게 위치를 이동(미세 조정)</b>할 수 있습니다!</p>
+    <p style="font-size:12px; color:#0284c7; margin:5px 0 10px 0;">💡 <b>안내:</b> 지도 위의 <b>점(마커)</b>을 드래그하여 위치를 자유롭게 조정할 수 있습니다.</p>
     <div id="map"></div>
     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;" id="quickLinks"></div>
   </div>
@@ -429,7 +417,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 적어주시면(예: <b>김녕미로공원</b>, <b>소소한 하루</b>) 실시간으로 주소가 좌표와 동기화됩니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 <b>시간(예: 13:00)</b>과 <b>내용(예: 렌터카 수령)</b>을 각각 분리하여 입력하실 수 있습니다.</p>
     <div class="timeline" id="timelineContainer"></div>
   </div>
 
@@ -474,8 +462,8 @@ footer{
 </div>
 
 <footer>
-  제주 가족여행 Premium Planner V25<br>
-  마커 드래그 이동(위치 커스텀) 및 김녕미로공원 등 주소 정밀 매칭 강화
+  제주 가족여행 Premium Planner V26<br>
+  시간/내용 분리 입력 및 점(마커)-선(동선) 분리 표시 적용
 </footer>
 
 <script type="module">
@@ -539,7 +527,6 @@ document.getElementById("accessKeyInput").addEventListener("keypress", function(
 const presetCoords = {
   "김녕미로공원": { lat: 33.5583, lng: 126.7725 },
   "구좌읍 일주동로 122": { lat: 33.5583, lng: 126.7725 },
-  "일주동로 122": { lat: 33.5583, lng: 126.7725 },
   "월정7길 28-14": { lat: 33.5545, lng: 126.7970 },
   "월정7길": { lat: 33.5545, lng: 126.7970 },
   "월정리": { lat: 33.5562, lng: 126.7958 },
@@ -618,57 +605,57 @@ const defaultTripData = {
     {
       date: "12/25 (도착일)",
       items: [
-        { text: "13:00 렌터카 수령", address: "제주공항 렌터카하우스", lat: 33.507, lng: 126.467, checked: true },
-        { text: "14:00 함덕 점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
-        { text: "15:30 비자림", address: "제주시 구좌읍 비자림로", lat: 33.491, lng: 126.809, checked: true },
-        { text: "17:00 세화해변", address: "제주시 구좌읍 세화리", lat: 33.525, lng: 126.860, checked: true },
-        { text: "18:00 월정리 카페거리", address: "제주시 구좌읍 월정리", lat: 33.556, lng: 126.795, checked: true }
+        { time: "13:00", text: "렌터카 수령", address: "제주공항", lat: 33.507, lng: 126.467, checked: true },
+        { time: "14:00", text: "함덕 점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
+        { time: "15:30", text: "비자림", address: "비자림", lat: 33.491, lng: 126.809, checked: true },
+        { time: "17:00", text: "세화해변", address: "세화해변", lat: 33.525, lng: 126.860, checked: true },
+        { time: "18:00", text: "월정리 카페거리", address: "월정리", lat: 33.556, lng: 126.795, checked: true }
       ]
     },
     {
       date: "12/26 (역사 · 교육 Day)",
       items: [
-        { text: "09:30 제주4.3평화공원", address: "제주시 명림로", lat: 33.448, lng: 126.651, checked: true },
-        { text: "12:30 점심", address: "제주시내", lat: 33.513, lng: 126.548, checked: true },
-        { text: "14:00 국립제주박물관", address: "제주시 일주동로", lat: 33.513, lng: 126.548, checked: true },
-        { text: "16:30 사라봉 전망대", address: "제주시 사라봉동길", lat: 33.518, lng: 126.535, checked: true },
-        { text: "17:20 용담해안도로 노을", address: "제주시 용담해안도로", lat: 33.512, lng: 126.495, checked: true }
+        { time: "09:30", text: "제주4.3평화공원", address: "제주4.3평화공원", lat: 33.448, lng: 126.651, checked: true },
+        { time: "12:30", text: "점심", address: "제주시내", lat: 33.513, lng: 126.548, checked: true },
+        { time: "14:00", text: "국립제주박물관", address: "국립제주박물관", lat: 33.513, lng: 126.548, checked: true },
+        { time: "16:30", text: "사라봉 전망대", address: "사라봉전망대", lat: 33.518, lng: 126.535, checked: true },
+        { time: "17:20", text: "용담해안도로 노을", address: "용담해안도로", lat: 33.512, lng: 126.495, checked: true }
       ]
     },
     {
       date: "12/27 (가족 체험 Day)",
       items: [
-        { text: "09:30 아쿠아플라넷 제주", address: "서귀포시 성산읍 고성리", lat: 33.433, lng: 126.927, checked: true },
-        { text: "13:00 성산 점심", address: "성산읍", lat: 33.452, lng: 126.924, checked: true },
-        { text: "14:00 섭지코지", address: "서귀포시 성산읍 섭지코지로", lat: 33.424, lng: 126.930, checked: true },
-        { text: "16:00 광치기해변", address: "서귀포시 성산읍 고성리", lat: 33.452, lng: 126.924, checked: true },
-        { text: "17:30 성산 카페", address: "성산읍", lat: 33.460, lng: 126.932, checked: true }
+        { time: "09:30", text: "아쿠아플라넷 제주", address: "아쿠아플라넷제주", lat: 33.433, lng: 126.927, checked: true },
+        { time: "13:00", text: "성산 점심", address: "성산일출봉", lat: 33.452, lng: 126.924, checked: true },
+        { time: "14:00", text: "섭지코지", address: "섭지코지", lat: 33.424, lng: 126.930, checked: true },
+        { time: "16:00", text: "광치기해변", address: "광치기해변", lat: 33.452, lng: 126.924, checked: true },
+        { time: "17:30", text: "성산 카페", address: "성산일출봉", lat: 33.460, lng: 126.932, checked: true }
       ]
     },
     {
       date: "12/28 (귀가일)",
       items: [
-        { text: "09:30 함덕해수욕장", address: "제주시 조천읍 함덕리", lat: 33.543, lng: 126.669, checked: true },
-        { text: "11:30 점심", address: "조천읍", lat: 33.543, lng: 126.669, checked: true },
-        { text: "13:00 도두봉", address: "제주시 도두일동", lat: 33.507, lng: 126.467, checked: true },
-        { text: "14:20 렌터카 반납", address: "제주공항", lat: 33.507, lng: 126.467, checked: true },
-        { text: "16:00 김포행 출발", address: "제주공항", lat: 33.507, lng: 126.467, checked: true }
+        { time: "09:30", text: "함덕해수욕장", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
+        { time: "11:30", text: "점심", address: "함덕해수욕장", lat: 33.543, lng: 126.669, checked: true },
+        { time: "13:00", text: "도두봉", address: "도두봉", lat: 33.507, lng: 126.467, checked: true },
+        { time: "14:20", text: "렌터카 반납", address: "제주공항", lat: 33.507, lng: 126.467, checked: true },
+        { time: "16:00", text: "김포행 출발", address: "제주공항", lat: 33.507, lng: 126.467, checked: true }
       ]
     }
   ],
   restaurants: [
-    { name: "맛나식당 (성산)", address: "서귀포시 성산읍 동류호로", lat: 33.460, lng: 126.910 },
-    { name: "해녀의집 (세화)", address: "제주시 구좌읍 해맞이해안로", lat: 33.525, lng: 126.860 },
-    { name: "덤장 함덕점", address: "제주시 조천읍 조함해안로", lat: 33.543, lng: 126.669 },
-    { name: "성산 해녀짬뽕", address: "서귀포시 성산읍 해맞이해안로", lat: 33.450, lng: 126.920 },
-    { name: "전복마시문어마시", address: "제주시 구좌읍 월정리", lat: 33.550, lng: 126.800 }
+    { name: "맛나식당 (성산)", address: "성산일출봉", lat: 33.460, lng: 126.910 },
+    { name: "해녀의집 (세화)", address: "세화해변", lat: 33.525, lng: 126.860 },
+    { name: "덤장 함덕점", address: "함덕해수욕장", lat: 33.543, lng: 126.669 },
+    { name: "성산 해녀짬뽕", address: "성산일출봉", lat: 33.450, lng: 126.920 },
+    { name: "전복마시문어마시", address: "월정리", lat: 33.550, lng: 126.800 }
   ],
   cafes: [
-    { name: "카페 진정성 제주", address: "제주시 서해안로", lat: 33.530, lng: 126.350 },
-    { name: "카페 공작소", address: "제주시 구좌읍 해맞이해안로", lat: 33.525, lng: 126.860 },
-    { name: "카페 코지", address: "서귀포시 성산읍", lat: 33.440, lng: 126.930 },
-    { name: "월정리 해변카페", address: "제주시 구좌읍 월정리", lat: 33.556, lng: 126.795 },
-    { name: "오드랑베이커리", address: "제주시 조천읍 조함해안로", lat: 33.543, lng: 126.669 }
+    { name: "카페 진정성 제주", address: "제주공항", lat: 33.530, lng: 126.350 },
+    { name: "카페 공작소", address: "세화해변", lat: 33.525, lng: 126.860 },
+    { name: "카페 코지", address: "섭지코지", lat: 33.440, lng: 126.930 },
+    { name: "월정리 해변카페", address: "월정리", lat: 33.556, lng: 126.795 },
+    { name: "오드랑베이커리", address: "함덕해수욕장", lat: 33.543, lng: 126.669 }
   ],
   expenses: [
     { name: "렌터카", cost: 260000 },
@@ -700,7 +687,6 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19 }
 
 let currentLayers = [];
 
-// 1. 마커 드래그 기능 추가 (사용자가 지도 위에서 직접 마커를 움직여 위치 미세조정 가능)
 function makeDraggable(marker, updateCallback) {
   marker.on('dragend', function(event) {
     const position = marker.getLatLng();
@@ -755,20 +741,33 @@ window.renderMap = function() {
     });
   }
 
+  // 선으로 연결될 순서 좌표 배열 (순서대로 수집)
+  let routeCoords = [];
+
   tripData.days.forEach((day, dIdx) => {
     if (dayFilter !== "all" && dayFilter != dIdx) return;
     day.items.forEach((item, iIdx) => {
       if(item.checked && item.lat && item.lng) {
+        // 동선 라인용 좌표 수집
+        routeCoords.push([item.lat, item.lng]);
+
         allMarkersData.push({ 
           type: '일정', category: 'dayItem', dIdx: dIdx, iIdx: iIdx, 
-          name: item.text, desc: `[${day.date}] 주소: ${item.address || ''}`, 
+          name: `${item.time || ''} ${item.text}`.trim(), 
+          desc: `[${day.date}] 주소: ${item.address || ''}`, 
           lat: item.lat, lng: item.lng, color: '#0ea5e9' 
         });
       }
     });
   });
 
-  // 동일 좌표(소수점 4자리) 그룹화 후 방사형 오프셋 분산 (마커 겹침 방지)
+  // 1. 선(동선) 먼저 독립적으로 렌더링
+  if(routeCoords.length > 1) {
+    const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 4, dashArray: '5, 5', opacity: 0.8 }).addTo(map);
+    currentLayers.push(polyline);
+  }
+
+  // 2. 주소/장소 정보 점(마커) 렌더링 (겹침 방지 오프셋 적용 및 드래그 이동 지원)
   let coordGroups = {};
   allMarkersData.forEach(m => {
     const key = `${m.lat.toFixed(4)}_${m.lng.toFixed(4)}`;
@@ -786,7 +785,7 @@ window.renderMap = function() {
 
       if (totalInGroup > 1) {
         const angle = (idx / totalInGroup) * 2 * Math.PI;
-        const offset = 0.00022; // 약 25미터 간격 분산
+        const offset = 0.00022; 
         dLat += Math.cos(angle) * offset;
         dLng += Math.sin(angle) * offset;
       }
@@ -797,13 +796,12 @@ window.renderMap = function() {
       else if(m.type === '카페') badgeIcon = `☕ ${m.name}`;
       else badgeIcon = `📍 ${m.name}`;
 
+      // 깔끔한 원형 점(Dot) 또는 핀 형태 마커
       const markerHtml = `<div style="background:${m.color};color:white;padding:3px 8px;border-radius:15px;font-weight:bold;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3);text-align:center;white-space:nowrap;">${badgeIcon}</div>`;
       const icon = L.divIcon({ html: markerHtml, className: 'custom-distributed-icon', iconSize: [110, 26], iconAnchor: [55, 13] });
       
-      // 드래그 가능한 마커 생성 (draggable: true)
-      const marker = L.marker([dLat, dLng], { icon, draggable: true }).addTo(map).bindPopup(`<b>[${m.type}] ${m.name}</b><br>${m.desc}<br><i style="font-size:10px;color:#666;">(마커를 드래그하여 위치를 직접 옮길 수 있습니다)</i>`);
+      const marker = L.marker([dLat, dLng], { icon, draggable: true }).addTo(map).bindPopup(`<b>[${m.type}] ${m.name}</b><br>${m.desc}<br><i style="font-size:10px;color:#666;">(마커를 드래그하여 위치를 직접 수정할 수 있습니다)</i>`);
       
-      // 드래그 완료 시 해당 데이터의 GPS 좌표를 업데이트하고 저장
       makeDraggable(marker, (newLat, newLng) => {
         if (m.category === 'hotel') {
           tripData.hotels[m.index].lat = newLat;
@@ -836,21 +834,6 @@ window.renderMap = function() {
       }
     });
   });
-
-  let routeCoords = [];
-  tripData.days.forEach((day, dIdx) => {
-    if (dayFilter !== "all" && dayFilter != dIdx) return;
-    day.items.forEach(item => {
-      if(item.checked && item.lat && item.lng) {
-        routeCoords.push([item.lat, item.lng]);
-      }
-    });
-  });
-
-  if(routeCoords.length > 1) {
-    const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 4, dashArray: '5, 5' }).addTo(map);
-    currentLayers.push(polyline);
-  }
 };
 
 window.applyMapFilter = function() {
@@ -982,13 +965,15 @@ function renderAll() {
     let itemsHtml = "";
     day.items.forEach((item, iIdx) => {
       if (item.checked === undefined) item.checked = true;
+      if (item.time === undefined) item.time = "12:00"; // 하위 호환
 
       itemsHtml += `
         <div class="item">
           <label style="display:flex; align-items:center; gap:3px; cursor:pointer; font-size:12px; font-weight:bold; color:#0284c7; white-space:nowrap;">
             <input type="checkbox" ${item.checked ? "checked" : ""} onchange="toggleItemCheck(${dIdx}, ${iIdx})" style="width:16px; height:16px; margin:0;"> 동선
           </label>
-          <input type="text" placeholder="일정 내용" value="${item.text}" onchange="updateItemText(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.5; min-width:110px;">
+          <input type="text" placeholder="시간 (예: 13:00)" value="${item.time || ''}" onchange="updateItemTime(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; width:75px; text-align:center;">
+          <input type="text" placeholder="일정 내용" value="${item.text}" onchange="updateItemText(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.5; min-width:90px;">
           <input type="text" placeholder="장소/주소" value="${item.address || ''}" onchange="updateItemAddress(${dIdx}, ${iIdx}, this.value)" style="margin:0; padding:5px; flex:1.2; min-width:90px;">
           <button class="btn" style="padding:4px 8px; font-size:12px; background:#10b981;" onclick="window.addDayItemBefore(${dIdx}, ${iIdx})" title="이 일정 앞에 추가">+</button>
           <button class="btn-delete" onclick="window.removeDayItem(${dIdx}, ${iIdx})" title="삭제">-</button>
@@ -1153,7 +1138,7 @@ window.saveInfo = function() {
 };
 
 window.addDaySection = function() {
-  tripData.days.push({ date: "새로운 날짜", items: [{ text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true }] });
+  tripData.days.push({ date: "새로운 날짜", items: [{ time: "12:00", text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true }] });
   saveAll();
 };
 
@@ -1170,17 +1155,22 @@ window.updateDayDate = function(dIdx, val) {
 };
 
 window.addDayItem = function(dIdx) {
-  tripData.days[dIdx].items.push({ text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
+  tripData.days[dIdx].items.push({ time: "12:00", text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
   saveAll();
 };
 
 window.addDayItemBefore = function(dIdx, iIdx) {
-  tripData.days[dIdx].items.splice(iIdx, 0, { text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
+  tripData.days[dIdx].items.splice(iIdx, 0, { time: "12:00", text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
   saveAll();
 };
 
 window.removeDayItem = function(dIdx, iIdx) {
   tripData.days[dIdx].items.splice(iIdx, 1);
+  saveAll();
+};
+
+window.updateItemTime = function(dIdx, iIdx, val) {
+  tripData.days[dIdx].items[iIdx].time = val;
   saveAll();
 };
 
@@ -1307,6 +1297,20 @@ function initApp() {
     if (snapshot.exists()) {
       const remoteData = snapshot.data();
       if (remoteData && remoteData.days && remoteData.days.length > 0) {
+        // 하위 호환: 기존 items에 time 필드가 없으면 분리하여 세팅
+        remoteData.days.forEach(day => {
+          day.items.forEach(item => {
+            if (!item.time) {
+              const parts = item.text.split(" ");
+              if (parts.length > 0 && parts[0].includes(":")) {
+                item.time = parts[0];
+                item.text = parts.slice(1).join(" ");
+              } else {
+                item.time = "12:00";
+              }
+            }
+          });
+        });
         tripData = remoteData;
       } else {
         tripData = defaultTripData;
