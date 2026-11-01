@@ -7,7 +7,6 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=o8yxtn3ja8"></script>
 
 <style>
 :root{
@@ -337,7 +336,7 @@ footer{
 <header>
   <h1 style="display:inline-flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap; margin:0;">
     <span id="headerTitleText">🏝 제주 가족여행 Planner</span>
-    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.2</span>
+    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.3</span>
   </h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
   <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
@@ -840,6 +839,28 @@ let leafletMapObj = null;
 let currentLayers = [];
 let currentMapEngine = localStorage.getItem("jejuMapEngine") || "osm";
 
+function loadNaverScript(callback) {
+  if (typeof naver !== 'undefined' && naver.maps) {
+    callback();
+    return;
+  }
+  const existingScript = document.getElementById("naverMapScriptTag");
+  if (existingScript) existingScript.remove();
+
+  const script = document.createElement("script");
+  script.id = "naverMapScriptTag";
+  script.type = "text/javascript";
+  script.src = "https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=o8yxtn3ja8";
+  script.onload = () => {
+    if (callback) callback();
+  };
+  script.onerror = () => {
+    alert("네이버 지도 로드에 실패했습니다. 일반 지도로 전환합니다.");
+    window.switchMapEngine("osm");
+  };
+  document.head.appendChild(script);
+}
+
 window.switchMapEngine = function(engine) {
   currentMapEngine = engine;
   localStorage.setItem("jejuMapEngine", engine);
@@ -848,7 +869,14 @@ window.switchMapEngine = function(engine) {
   naverMapObj = null;
   leafletMapObj = null;
   currentLayers = [];
-  renderMap();
+
+  if (engine === "naver") {
+    loadNaverScript(() => {
+      renderMap();
+    });
+  } else {
+    renderMap();
+  }
 };
 
 function initMapInstance() {
