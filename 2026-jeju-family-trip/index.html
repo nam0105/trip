@@ -337,7 +337,7 @@ footer{
 <header>
   <h1 style="display:inline-flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap; margin:0;">
     <span id="headerTitleText">🏝 제주 가족여행 Planner</span>
-    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.1</span>
+    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.2</span>
   </h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
   <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
@@ -432,8 +432,8 @@ footer{
         <option value="all">📅 전체 일정 동선 보기</option>
       </select>
       <select id="mapEngineSelect" onchange="window.switchMapEngine(this.value)" style="padding:6px; border-radius:6px; width:auto; margin:0; font-size:13px; font-weight:bold; color:#0369a1;">
-        <option value="naver">🇳 네이버 지도</option>
-        <option value="carto">🗺 일반 지도 (고화질)</option>
+        <option value="osm">🗺 일반 지도 (키 불필요/즉시 로드)</option>
+        <option value="naver">🇳 네이버 지도 (NCP 연동)</option>
       </select>
       <button class="btn btn-success" style="padding:6px 14px; font-size:13px;" onclick="applyMapFilter()">적용</button>
     </div>
@@ -838,7 +838,7 @@ let tripData = defaultTripData;
 let naverMapObj = null;
 let leafletMapObj = null;
 let currentLayers = [];
-let currentMapEngine = localStorage.getItem("jejuMapEngine") || "naver";
+let currentMapEngine = localStorage.getItem("jejuMapEngine") || "osm";
 
 window.switchMapEngine = function(engine) {
   currentMapEngine = engine;
@@ -874,12 +874,11 @@ function initMapInstance() {
     }
   }
 
-  // Fallback 또는 일반 지도 모드
+  // 100% 무료 무제한 오픈스트리트맵 타일 (API KEY 불필요)
   if (leafletMapObj) return;
   mapEl.innerHTML = "";
   leafletMapObj = L.map("map").setView([33.47, 126.82], 10);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    subdomains: 'abcd',
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19
   }).addTo(leafletMapObj);
 }
