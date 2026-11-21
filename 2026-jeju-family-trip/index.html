@@ -338,7 +338,7 @@ footer{
 <header>
   <h1 style="display:inline-flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap; margin:0;">
     <span id="headerTitleText">🏝 제주 가족여행 Planner</span>
-    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.5</span>
+    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.6</span>
   </h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
   <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
@@ -937,38 +937,41 @@ window.renderMap = function() {
     });
   }
 
-  let routeCoords = [];
+  const dayColors = ['#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6'];
+
   tripData.days.forEach((day, dIdx) => {
     if (dayFilter !== "all" && dayFilter != dIdx) return;
+    const dayColor = dayColors[dIdx % dayColors.length];
+    let dayRouteCoords = [];
+
     day.items.forEach((item, iIdx) => {
       if(item.checked && item.lat && item.lng) {
-        routeCoords.push([item.lat, item.lng]);
+        dayRouteCoords.push([item.lat, item.lng]);
 
         allSpots.push({ 
-          type: '일정', category: 'dayItem', dIdx: dIdx, iIdx: iIdx, 
+          type: `일정(${day.date})`, category: 'dayItem', dIdx: dIdx, iIdx: iIdx, 
           label: `${item.time ? item.time + ' ' : ''}${item.text}`.trim(), 
           desc: `[${day.date}] 주소: ${item.address || ''}`, 
           lat: item.lat, lng: item.lng, 
           labelLat: item.labelLat, labelLng: item.labelLng,
-          color: '#0ea5e9' 
+          color: dayColor 
         });
       }
     });
-  });
 
-  // --- 네이버 지도 렌더링 ---
-  if (routeCoords.length > 1) {
-    const naverPath = routeCoords.map(c => new naver.maps.LatLng(c[0], c[1]));
-    const polyline = new naver.maps.Polyline({
-      map: naverMapObj,
-      path: naverPath,
-      strokeColor: '#0ea5e9',
-      strokeWeight: 4,
-      strokeStyle: 'dash',
-      strokeOpacity: 0.85
-    });
-    currentLayers.push(polyline);
-  }
+    if (dayRouteCoords.length > 1) {
+      const naverPath = dayRouteCoords.map(c => new naver.maps.LatLng(c[0], c[1]));
+      const polyline = new naver.maps.Polyline({
+        map: naverMapObj,
+        path: naverPath,
+        strokeColor: dayColor,
+        strokeWeight: 4,
+        strokeStyle: 'dash',
+        strokeOpacity: 0.85
+      });
+      currentLayers.push(polyline);
+    }
+  });
 
   allSpots.forEach((spot, sIdx) => {
     const spotLatLng = new naver.maps.LatLng(spot.lat, spot.lng);
