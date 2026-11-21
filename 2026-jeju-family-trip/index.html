@@ -8,8 +8,7 @@
 <meta http-equiv="Expires" content="0"/>
 <title>🏝 제주 가족여행 Planner</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=0phtg9tbvo"></script>
 
 <style>
 :root{
@@ -339,7 +338,7 @@ footer{
 <header>
   <h1 style="display:inline-flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap; margin:0;">
     <span id="headerTitleText">🏝 제주 가족여행 Planner</span>
-    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.4</span>
+    <span id="appVersionBadge" style="font-size:12px; font-weight:normal; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.4);">ver 1.0.5</span>
   </h1>
   <p id="headerSub">소소한 하루 (구좌읍) | 12/25 ~ 12/28</p>
   <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
@@ -419,7 +418,7 @@ footer{
 
   <!-- 2. 여행 지도 -->
   <div class="card">
-    <h2>🗺 여행 지도 
+    <h2>🗺 네이버 여행 지도 
       <span style="font-size:11px; font-weight:normal; color:#666;">(🏠숙소 / 🍜맛집 / ☕카페 / 📍일정)</span>
     </h2>
     
@@ -433,18 +432,14 @@ footer{
       <select id="selectDayFilter" style="padding:6px; border-radius:6px; width:auto; margin:0; font-size:13px;">
         <option value="all">📅 전체 일정 동선 보기</option>
       </select>
-      <select id="mapEngineSelect" onchange="window.switchMapEngine(this.value)" style="padding:6px; border-radius:6px; width:auto; margin:0; font-size:13px; font-weight:bold; color:#0369a1;">
-        <option value="osm">🗺 일반 지도 (키 불필요/즉시 로드)</option>
-        <option value="naver">🇳 네이버 지도 (NCP 연동)</option>
-      </select>
       <button class="btn btn-success" style="padding:6px 14px; font-size:13px;" onclick="applyMapFilter()">적용</button>
     </div>
 
     <div style="background:#f1f5f9; padding:8px 12px; border-radius:8px; margin-bottom:10px; font-size:12px; color:#334155; display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
-      <span>🔵 <b>원형 점:</b> 장소 위치 (마우스 드래그로 실제 위치 조정 가능)</span>
+      <span>🔵 <b>원형 점:</b> 주소 기반 장소 위치 (마우스 드래그로 실제 위치 조정 가능)</span>
       <span>🏷️ <b>내용 라벨:</b> 시간 및 일정 (드래그로 배치 조정 가능)</span>
       <span>➖ <b>동선:</b> 시간 순서 자동 연결</span>
-      <span style="color:#0284c7; font-weight:bold;">💡 장소 점이나 라벨을 마우스로 잡고 끌면 원하는 위치로 완벽하게 조정할 수 있습니다!</span>
+      <span style="color:#0284c7; font-weight:bold;">💡 네이버 지도 주소 기반으로 위치가 자동 연동됩니다!</span>
     </div>
 
     <div id="map"></div>
@@ -457,7 +452,7 @@ footer{
       📅 여행 일정 
       <button class="btn" style="font-size:11px; padding:4px 8px;" onclick="addDaySection()">+ 날짜 추가</button>
     </h2>
-    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 입력하면 지도상의 정확한 위치에 <b>고정 점</b>이 찍히고, 일정 라벨이 회색 점선으로 연결됩니다.</p>
+    <p style="color:#666; font-size:12px; margin-bottom:10px;">💡 주소나 장소명을 입력하면 네이버 지도 주소 기반으로 정확한 위치에 <b>고정 점</b>이 찍히고, 일정 라벨이 회색 점선으로 연결됩니다.</p>
     <div class="timeline" id="timelineContainer"></div>
 
     <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:12px 15px; border-radius:10px; margin-top:15px; font-size:13px; line-height:1.6; color:#166534;">
@@ -465,7 +460,7 @@ footer{
       <ul style="margin:6px 0 0 0; padding-left:20px;">
         <li><b>시간:</b> 방문 시간 (예: <code>13:00</code>, <code>09:30</code>)을 적어주세요.</li>
         <li><b>일정 내용:</b> 하실 활동 (예: <code>렌터카 수령</code>, <code>점심 식사</code>, <code>산책</code>)을 적어주세요.</li>
-        <li><b>장소/주소:</b> 도로명 주소(예: <code>만장굴길 122</code>, <code>월정7길 28-14</code>)나 주요 지명/마을 이름(예: <code>김녕미로공원</code>, <code>월정리</code>, <code>소소한 하루</code>)을 적어주시면 지도 위의 실제 위치에 <b>고정 점(원)</b>이 정확히 찍힙니다!</li>
+        <li><b>장소/주소:</b> 도로명 주소(예: <code>만장굴길 122</code>, <code>월정7길 28-14</code>)나 주요 지명/마을 이름(예: <code>김녕미로공원</code>, <code>월정리</code>, <code>소소한 하루</code>)을 적어주시면 네이버 지도 주소 기반 실제 위치에 <b>고정 점(원)</b>이 정확히 찍힙니다!</li>
         <li><b>위치 미세 조정:</b> 지도에 표시된 일정 라벨은 <b>마우스로 드래그</b>하여 원하는 위치로 자유롭게 이동시킬 수 있습니다.</li>
       </ul>
     </div>
@@ -655,7 +650,7 @@ const presetCoords = {
   "용머리해안": { lat: 33.2320, lng: 126.3150 },
   "송악산": { lat: 33.2030, lng: 126.2900 },
 
-  // 맛집 및 카페
+  // 맛집 및 카페 (네이버 지도 정확한 주소 기반)
   "맛나식당": { lat: 33.4619, lng: 126.9185 },
   "동류암로 41": { lat: 33.4619, lng: 126.9185 },
   "해녀의집": { lat: 33.5255, lng: 126.8615 },
@@ -680,62 +675,12 @@ const presetCoords = {
   "조함해안로 552-3": { lat: 33.5422, lng: 126.6685 },
 };
 
-// 지능형 주소 및 키워드 지오코딩
-async function geocodeAddress(query, tripDataObj) {
-  if (!query) return { lat: 33.5562, lng: 126.7958 };
-
-  // 1. 등록된 숙소 이름/주소 최우선 동기화
-  if (tripDataObj && tripDataObj.hotels) {
-    for (let h of tripDataObj.hotels) {
-      if (query.includes(h.name) || (h.address && query.includes(h.address))) {
-        if (h.lat && h.lng) {
-          return { lat: h.lat, lng: h.lng };
-        }
-      }
-    }
-  }
-
-  // 2. 정밀 사전 키워드 검색 (글자수 긴 것부터 우선 매칭하여 정밀도 극대화)
-  let sortedKeys = Object.keys(presetCoords).sort((a, b) => b.length - a.length);
-  for (let key of sortedKeys) {
-    if (query.includes(key)) {
-      return presetCoords[key];
-    }
-  }
-
-  // 3. 도로명/지번 추출 후 OpenStreetMap 검색 시도
-  try {
-    // 불필요한 행정구역 수식어 정리 후 검색
-    const cleanQuery = query.replace(/제주특별자치도|특별자치도/g, "").trim();
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=kr&limit=1&q=${encodeURIComponent(cleanQuery)}`);
-    const data = await res.json();
-    if (data && data.length > 0) {
-      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-    }
-  } catch (e) {
-    console.warn("Geocoding fetch failed:", e);
-  }
-
-  // 4. 읍/면 단위 기본 좌표 fallback
-  if (query.includes("구좌")) return { lat: 33.5250, lng: 126.8500 };
-  if (query.includes("조천")) return { lat: 33.5350, lng: 126.6250 };
-  if (query.includes("애월")) return { lat: 33.4650, lng: 126.3150 };
-  if (query.includes("한림")) return { lat: 33.4140, lng: 126.2640 };
-  if (query.includes("성산")) return { lat: 33.4585, lng: 126.9423 };
-  if (query.includes("표선")) return { lat: 33.3280, lng: 126.8320 };
-  if (query.includes("안덕")) return { lat: 33.2550, lng: 126.3080 };
-  if (query.includes("대정")) return { lat: 33.2230, lng: 126.2520 };
-
-  return { lat: 33.5562, lng: 126.7958 };
-}
-
 function guessCoords(text, tripDataObj) {
-  // 동기식 사전 조회
   if (!text) return { lat: 33.5562, lng: 126.7958 };
   if (tripDataObj && tripDataObj.hotels) {
     for (let h of tripDataObj.hotels) {
       if (text.includes(h.name) || (h.address && text.includes(h.address))) {
-        if (h.lat && h.lng) return { lat: h.lat, lng: h.lng };
+        return presetCoords[h.name] || presetCoords[h.address] || { lat: 33.5545, lng: 126.7970 };
       }
     }
   }
@@ -746,6 +691,41 @@ function guessCoords(text, tripDataObj) {
   return { lat: 33.5562, lng: 126.7958 };
 }
 
+// 주소 기반 좌표 자동 연동 함수
+function updateCoordsFromAddress(data) {
+  if (data.hotels) {
+    data.hotels.forEach(h => {
+      const c = guessCoords((h.address || '') + ' ' + (h.name || ''), data);
+      h.lat = c.lat;
+      h.lng = c.lng;
+    });
+  }
+  if (data.restaurants) {
+    data.restaurants.forEach(r => {
+      const c = guessCoords((r.address || '') + ' ' + (r.name || ''), data);
+      r.lat = c.lat;
+      r.lng = c.lng;
+    });
+  }
+  if (data.cafes) {
+    data.cafes.forEach(cItem => {
+      const c = guessCoords((cItem.address || '') + ' ' + (cItem.name || ''), data);
+      cItem.lat = c.lat;
+      cItem.lng = c.lng;
+    });
+  }
+  if (data.days) {
+    data.days.forEach(day => {
+      day.items.forEach(item => {
+        const c = guessCoords((item.address || '') + ' ' + (item.text || ''), data);
+        item.lat = c.lat;
+        item.lng = c.lng;
+      });
+    });
+  }
+  return data;
+}
+
 const defaultTripData = {
   title: "🏝 제주 가족여행 Planner",
   sub: "소소한 하루 (구좌읍) | 12/25 ~ 12/28",
@@ -754,64 +734,64 @@ const defaultTripData = {
   people: "4명",
   highlights: "비자림, 성산일출봉, 아쿠아플라넷",
   hotels: [
-    { name: "소소한 하루", nights: "2박", address: "제주시 구좌읍 월정7길 28-14", lat: 33.5545, lng: 126.7970 },
-    { name: "B숙소 (예시)", nights: "1박", address: "서귀포시 성산읍", lat: 33.430, lng: 126.920 }
+    { name: "소소한 하루", nights: "2박", address: "제주시 구좌읍 월정7길 28-14" },
+    { name: "B숙소 (예시)", nights: "1박", address: "서귀포시 성산읍" }
   ],
   days: [
     {
       date: "12/25 (도착일)",
       items: [
-        { time: "13:00", text: "렌터카 수령", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true },
-        { time: "14:00", text: "함덕 점심", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695, checked: true },
-        { time: "15:30", text: "비자림", address: "비자림", lat: 33.4912, lng: 126.8093, checked: true },
-        { time: "17:00", text: "세화해변", address: "세화해변", lat: 33.5250, lng: 126.8600, checked: true },
-        { time: "18:00", text: "월정리 카페거리", address: "월정리", lat: 33.5562, lng: 126.7958, checked: true }
+        { time: "13:00", text: "렌터카 수령", address: "제주공항", checked: true },
+        { time: "14:00", text: "함덕 점심", address: "함덕해수욕장", checked: true },
+        { time: "15:30", text: "비자림", address: "비자림", checked: true },
+        { time: "17:00", text: "세화해변", address: "세화해변", checked: true },
+        { time: "18:00", text: "월정리 카페거리", address: "월정리", checked: true }
       ]
     },
     {
       date: "12/26 (역사 · 교육 Day)",
       items: [
-        { time: "09:30", text: "제주4.3평화공원", address: "제주4.3평화공원", lat: 33.4485, lng: 126.6512, checked: true },
-        { time: "12:30", text: "점심", address: "제주시내", lat: 33.5134, lng: 126.5482, checked: true },
-        { time: "14:00", text: "국립제주박물관", address: "국립제주박물관", lat: 33.5134, lng: 126.5482, checked: true },
-        { time: "16:30", text: "사라봉 전망대", address: "사라봉전망대", lat: 33.5180, lng: 126.5350, checked: true },
-        { time: "17:20", text: "용담해안도로 노을", address: "용담해안도로", lat: 33.5120, lng: 126.4950, checked: true }
+        { time: "09:30", text: "제주4.3평화공원", address: "제주4.3평화공원", checked: true },
+        { time: "12:30", text: "점심", address: "제주시내", checked: true },
+        { time: "14:00", text: "국립제주박물관", address: "국립제주박물관", checked: true },
+        { time: "16:30", text: "사라봉 전망대", address: "사라봉전망대", checked: true },
+        { time: "17:20", text: "용담해안도로 노을", address: "용담해안도로", checked: true }
       ]
     },
     {
       date: "12/27 (가족 체험 Day)",
       items: [
-        { time: "09:30", text: "아쿠아플라넷 제주", address: "아쿠아플라넷", lat: 33.4330, lng: 126.9270, checked: true },
-        { time: "13:00", text: "성산 점심", address: "성산일출봉", lat: 33.4585, lng: 126.9423, checked: true },
-        { time: "14:00", text: "섭지코지", address: "섭지코지", lat: 33.4241, lng: 126.9300, checked: true },
-        { time: "16:00", text: "광치기해변", address: "광치기해변", lat: 33.4520, lng: 126.9240, checked: true },
-        { time: "17:30", text: "성산 카페", address: "성산일출봉", lat: 33.4585, lng: 126.9423, checked: true }
+        { time: "09:30", text: "아쿠아플라넷 제주", address: "아쿠아플라넷", checked: true },
+        { time: "13:00", text: "성산 점심", address: "성산일출봉", checked: true },
+        { time: "14:00", text: "섭지코지", address: "섭지코지", checked: true },
+        { time: "16:00", text: "광치기해변", address: "광치기해변", checked: true },
+        { time: "17:30", text: "성산 카페", address: "성산일출봉", checked: true }
       ]
     },
     {
       date: "12/28 (귀가일)",
       items: [
-        { time: "09:30", text: "함덕해수욕장", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695, checked: true },
-        { time: "11:30", text: "점심", address: "함덕해수욕장", lat: 33.5432, lng: 126.6695, checked: true },
-        { time: "13:00", text: "도두봉", address: "도두봉", lat: 33.5070, lng: 126.4670, checked: true },
-        { time: "14:20", text: "렌터카 반납", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true },
-        { time: "16:00", text: "김포행 출발", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true }
+        { time: "09:30", text: "함덕해수욕장", address: "함덕해수욕장", checked: true },
+        { time: "11:30", text: "점심", address: "함덕해수욕장", checked: true },
+        { time: "13:00", text: "도두봉", address: "도두봉", checked: true },
+        { time: "14:20", text: "렌터카 반납", address: "제주공항", checked: true },
+        { time: "16:00", text: "김포행 출발", address: "제주공항", checked: true }
       ]
     }
   ],
   restaurants: [
-    { name: "맛나식당 (성산)", address: "성산읍 동류암로 41", lat: 33.4619, lng: 126.9185 },
-    { name: "해녀의집 (세화)", address: "구좌읍 해맞이해안로 1403", lat: 33.5255, lng: 126.8615 },
-    { name: "덤장 함덕점", address: "조천읍 조함해안로 530", lat: 33.5430, lng: 126.6695 },
-    { name: "성산 해녀짬뽕", address: "성산읍 일출로 286", lat: 33.4628, lng: 126.9328 },
-    { name: "전복마시문어마시", address: "구좌읍 해맞이해안로 460", lat: 33.5558, lng: 126.7935 }
+    { name: "맛나식당", address: "제주 서귀포시 성산읍 동류암로 41" },
+    { name: "해녀의집", address: "제주 제주시 구좌읍 해맞이해안로 1403" },
+    { name: "덤장 함덕점", address: "제주 제주시 조천읍 조함해안로 530" },
+    { name: "성산 해녀짬뽕", address: "제주 서귀포시 성산읍 일출로 286" },
+    { name: "전복마시문어마시", address: "제주 제주시 구좌읍 해맞이해안로 460" }
   ],
   cafes: [
-    { name: "카페 진정성 제주", address: "제주시 서해안로 372", lat: 33.5097, lng: 126.4760 },
-    { name: "카페 공작소", address: "구좌읍 해맞이해안로 1446", lat: 33.5252, lng: 126.8605 },
-    { name: "카페 코지", address: "성산읍 한도로 200", lat: 33.4545, lng: 126.9248 },
-    { name: "월정리 해변카페", address: "구좌읍 월정리 해맞이해안로", lat: 33.5562, lng: 126.7958 },
-    { name: "오드랑베이커리", address: "조천읍 조함해안로 552-3", lat: 33.5422, lng: 126.6685 }
+    { name: "카페 진정성 제주", address: "제주 제주시 서해안로 372" },
+    { name: "카페 공작소", address: "제주 제주시 구좌읍 해맞이해안로 1446" },
+    { name: "카페 코지", address: "제주 서귀포시 성산읍 한도로 200" },
+    { name: "월정리 해변카페", address: "제주 제주시 구좌읍 월정리 해맞이해안로" },
+    { name: "오드랑베이커리", address: "제주 제주시 조천읍 조함해안로 552-3" }
   ],
   expenses: [
     { name: "렌터카", cost: 260000 },
@@ -835,83 +815,30 @@ const defaultTripData = {
   ]
 };
 
-let tripData = defaultTripData;
+let tripData = updateCoordsFromAddress(defaultTripData);
 
 let naverMapObj = null;
-let leafletMapObj = null;
 let currentLayers = [];
-let currentMapEngine = localStorage.getItem("jejuMapEngine") || "osm";
-
-function loadNaverScript(callback) {
-  if (typeof naver !== 'undefined' && naver.maps) {
-    callback();
-    return;
-  }
-  const existingScript = document.getElementById("naverMapScriptTag");
-  if (existingScript) existingScript.remove();
-
-  const script = document.createElement("script");
-  script.id = "naverMapScriptTag";
-  script.type = "text/javascript";
-  script.src = "https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=0phtg9tbvo";
-  script.onload = () => {
-    if (callback) callback();
-  };
-  script.onerror = () => {
-    alert("네이버 지도 로드에 실패했습니다. 일반 지도로 전환합니다.");
-    window.switchMapEngine("osm");
-  };
-  document.head.appendChild(script);
-}
-
-window.switchMapEngine = function(engine) {
-  currentMapEngine = engine;
-  localStorage.setItem("jejuMapEngine", engine);
-  const mapEl = document.getElementById("map");
-  if (mapEl) mapEl.innerHTML = "";
-  naverMapObj = null;
-  leafletMapObj = null;
-  currentLayers = [];
-
-  if (engine === "naver") {
-    loadNaverScript(() => {
-      renderMap();
-    });
-  } else {
-    renderMap();
-  }
-};
 
 function initMapInstance() {
   const mapEl = document.getElementById("map");
   if (!mapEl) return;
 
-  const engineSelect = document.getElementById("mapEngineSelect");
-  if (engineSelect) engineSelect.value = currentMapEngine;
-
-  if (currentMapEngine === "naver" && typeof naver !== 'undefined' && naver.maps) {
+  if (typeof naver !== 'undefined' && naver.maps) {
     if (naverMapObj) return;
     try {
       naverMapObj = new naver.maps.Map('map', {
         center: new naver.maps.LatLng(33.47, 126.82),
         zoom: 11,
-        mapTypeControl: true,
+        mapTypeControl: false,
         zoomControl: true
       });
       return;
     } catch(err) {
-      console.warn("Naver Map init failed, using Leaflet fallback:", err);
+      console.warn("Naver Map init failed:", err);
       naverMapObj = null;
     }
   }
-
-  // 100% 무료 무제한 오픈스트리트맵 타일 (API KEY 불필요)
-  if (leafletMapObj) return;
-  mapEl.innerHTML = "";
-  leafletMapObj = L.map("map").setView([33.47, 126.82], 10);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19
-  }).addTo(leafletMapObj);
 }
 
 function updateSpotCoord(spot, lat, lng) {
@@ -953,12 +880,12 @@ function updateLabelCoord(spot, lat, lng) {
 
 window.renderMap = function() {
   initMapInstance();
-
-  if (naverMapObj) {
-    currentLayers.forEach(l => { if (l && l.setMap) l.setMap(null); });
-  } else if (leafletMapObj) {
-    currentLayers.forEach(l => leafletMapObj.removeLayer(l));
+  if (!naverMapObj) {
+    setTimeout(renderMap, 300);
+    return;
   }
+
+  currentLayers.forEach(l => { if (l && l.setMap) l.setMap(null); });
   currentLayers = [];
 
   const showHotel = document.getElementById("chkShowHotel").checked;
@@ -1030,176 +957,87 @@ window.renderMap = function() {
   });
 
   // --- 네이버 지도 렌더링 ---
-  if (naverMapObj) {
-    if (routeCoords.length > 1) {
-      const naverPath = routeCoords.map(c => new naver.maps.LatLng(c[0], c[1]));
-      const polyline = new naver.maps.Polyline({
-        map: naverMapObj,
-        path: naverPath,
-        strokeColor: '#0ea5e9',
-        strokeWeight: 4,
-        strokeStyle: 'dash',
-        strokeOpacity: 0.85
-      });
-      currentLayers.push(polyline);
-    }
-
-    allSpots.forEach((spot, sIdx) => {
-      const spotLatLng = new naver.maps.LatLng(spot.lat, spot.lng);
-
-      const circleDot = new naver.maps.Marker({
-        position: spotLatLng,
-        map: naverMapObj,
-        draggable: true,
-        icon: {
-          content: `<div style="width:14px; height:14px; background:white; border:3px solid ${spot.color}; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,0.3); cursor:grab;"></div>`,
-          anchor: new naver.maps.Point(7, 7)
-        }
-      });
-      currentLayers.push(circleDot);
-
-      const defaultOffsetLat = 0.0025 + (sIdx % 3) * 0.001;
-      const defaultOffsetLng = 0.0035 + (sIdx % 2) * 0.0015;
-      const initialLabelLat = (spot.labelLat !== undefined) ? spot.labelLat : (spot.lat + defaultOffsetLat);
-      const initialLabelLng = (spot.labelLng !== undefined) ? spot.labelLng : (spot.lng + defaultOffsetLng);
-      const labelLatLng = new naver.maps.LatLng(initialLabelLat, initialLabelLng);
-
-      const leaderLine = new naver.maps.Polyline({
-        map: naverMapObj,
-        path: [spotLatLng, labelLatLng],
-        strokeColor: '#94a3b8',
-        strokeWeight: 2,
-        strokeStyle: 'dash'
-      });
-      currentLayers.push(leaderLine);
-
-      const labelMarker = new naver.maps.Marker({
-        position: labelLatLng,
-        map: naverMapObj,
-        draggable: true,
-        icon: {
-          content: `<div class="draggable-label-box" style="background:${spot.color};">${spot.label}</div>`,
-          anchor: new naver.maps.Point(55, 13)
-        }
-      });
-      currentLayers.push(labelMarker);
-
-      naver.maps.Event.addListener(circleDot, 'drag', function() {
-        leaderLine.setPath([circleDot.getPosition(), labelMarker.getPosition()]);
-      });
-      naver.maps.Event.addListener(circleDot, 'dragend', function() {
-        const newPos = circleDot.getPosition();
-        updateSpotCoord(spot, newPos.lat(), newPos.lng());
-      });
-
-      naver.maps.Event.addListener(labelMarker, 'drag', function() {
-        leaderLine.setPath([circleDot.getPosition(), labelMarker.getPosition()]);
-      });
-      naver.maps.Event.addListener(labelMarker, 'dragend', function() {
-        const finalPos = labelMarker.getPosition();
-        updateLabelCoord(spot, finalPos.lat(), finalPos.lng());
-      });
-
-      const naverSearchQuery = spot.desc ? spot.desc.replace(/<[^>]*>?/gm, ' ') : spot.label;
-      const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(naverSearchQuery)}`;
-      const infoWindow = new naver.maps.InfoWindow({
-        content: `
-          <div style="padding:10px; font-size:12px; line-height:1.5; font-family:'Malgun Gothic',sans-serif; min-width:180px;">
-            <b style="color:${spot.color}; font-size:13px;">[${spot.type}] ${spot.label}</b><br>${spot.desc}<br>
-            <a href="${naverMapUrl}" target="_blank" style="display:inline-block; margin-top:6px; color:#03c75a; font-weight:bold; font-size:11px; text-decoration:none;">🇳 네이버 지도 바로가기 &rarr;</a>
-          </div>
-        `,
-        borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8
-      });
-
-      naver.maps.Event.addListener(circleDot, 'click', function() {
-        if(infoWindow.getMap()) infoWindow.close();
-        else infoWindow.open(naverMapObj, circleDot);
-      });
-      naver.maps.Event.addListener(labelMarker, 'click', function() {
-        if(infoWindow.getMap()) infoWindow.close();
-        else infoWindow.open(naverMapObj, labelMarker);
-      });
-
-      if(spot.type === '숙소') {
-        const btn = document.createElement("a");
-        btn.className = "btn";
-        btn.style.background = "#0284c7";
-        btn.style.fontSize = "12px";
-        btn.style.padding = "5px 8px";
-        btn.target = "_blank";
-        btn.href = naverMapUrl;
-        btn.innerText = spot.label;
-        quickLinksEl.appendChild(btn);
-      }
-    });
-    return;
-  }
-
-  // --- Leaflet Fallback 렌더링 ---
   if (routeCoords.length > 1) {
-    const polyline = L.polyline(routeCoords, { color: '#0ea5e9', weight: 3.5, dashArray: '6, 6', opacity: 0.85 }).addTo(leafletMapObj);
+    const naverPath = routeCoords.map(c => new naver.maps.LatLng(c[0], c[1]));
+    const polyline = new naver.maps.Polyline({
+      map: naverMapObj,
+      path: naverPath,
+      strokeColor: '#0ea5e9',
+      strokeWeight: 4,
+      strokeStyle: 'dash',
+      strokeOpacity: 0.85
+    });
     currentLayers.push(polyline);
   }
 
   allSpots.forEach((spot, sIdx) => {
-    const spotLatLng = [spot.lat, spot.lng];
+    const spotLatLng = new naver.maps.LatLng(spot.lat, spot.lng);
 
-    const circleDot = L.marker(spotLatLng, {
-      icon: L.divIcon({
-        html: `<div style="width:14px; height:14px; background:white; border:3px solid ${spot.color}; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,0.3); cursor:grab;"></div>`,
-        className: 'custom-circle-dot',
-        iconSize: [14, 14],
-        iconAnchor: [7, 7]
-      }),
-      draggable: true
-    }).addTo(leafletMapObj);
+    const circleDot = new naver.maps.Marker({
+      position: spotLatLng,
+      map: naverMapObj,
+      draggable: false,
+      icon: {
+        content: `<div style="width:14px; height:14px; background:white; border:3px solid ${spot.color}; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`,
+        anchor: new naver.maps.Point(7, 7)
+      }
+    });
     currentLayers.push(circleDot);
 
     const defaultOffsetLat = 0.0025 + (sIdx % 3) * 0.001;
     const defaultOffsetLng = 0.0035 + (sIdx % 2) * 0.0015;
     const initialLabelLat = (spot.labelLat !== undefined) ? spot.labelLat : (spot.lat + defaultOffsetLat);
     const initialLabelLng = (spot.labelLng !== undefined) ? spot.labelLng : (spot.lng + defaultOffsetLng);
-    const labelLatLng = [initialLabelLat, initialLabelLng];
+    const labelLatLng = new naver.maps.LatLng(initialLabelLat, initialLabelLng);
 
-    const leaderLine = L.polyline([spotLatLng, labelLatLng], {
-      color: '#94a3b8',
-      weight: 1.5,
-      dashArray: '3, 4',
-      opacity: 0.85
-    }).addTo(leafletMapObj);
+    const leaderLine = new naver.maps.Polyline({
+      map: naverMapObj,
+      path: [spotLatLng, labelLatLng],
+      strokeColor: '#94a3b8',
+      strokeWeight: 2,
+      strokeStyle: 'dash'
+    });
     currentLayers.push(leaderLine);
 
-    const labelHtml = `<div class="draggable-label-box" style="background:${spot.color};">${spot.label}</div>`;
-    const labelIcon = L.divIcon({ html: labelHtml, className: 'custom-text-label-icon', iconSize: [110, 26], iconAnchor: [55, 13] });
-    
+    const labelMarker = new naver.maps.Marker({
+      position: labelLatLng,
+      map: naverMapObj,
+      draggable: true,
+      icon: {
+        content: `<div class="draggable-label-box" style="background:${spot.color};">${spot.label}</div>`,
+        anchor: new naver.maps.Point(55, 13)
+      }
+    });
+    currentLayers.push(labelMarker);
+
+    naver.maps.Event.addListener(labelMarker, 'drag', function() {
+      leaderLine.setPath([circleDot.getPosition(), labelMarker.getPosition()]);
+    });
+    naver.maps.Event.addListener(labelMarker, 'dragend', function() {
+      const finalPos = labelMarker.getPosition();
+      updateLabelCoord(spot, finalPos.lat(), finalPos.lng());
+    });
+
     const naverSearchQuery = spot.desc ? spot.desc.replace(/<[^>]*>?/gm, ' ') : spot.label;
     const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(naverSearchQuery)}`;
-
-    const labelMarker = L.marker(labelLatLng, { icon: labelIcon, draggable: true }).addTo(leafletMapObj);
-    labelMarker.bindPopup(`
-      <b>[${spot.type}] ${spot.label}</b><br>${spot.desc}<br>
-      <a href="${naverMapUrl}" target="_blank" style="display:inline-block; margin-top:6px; color:#03c75a; font-weight:bold; font-size:11px; text-decoration:none;">🇳 네이버 지도에서 바로보기 &rarr;</a><br>
-      <i style="font-size:10px;color:#666;">(라벨을 드래그하여 원하는 위치로 배치할 수 있습니다)</i>
-    `);
-
-    circleDot.on('drag', function() {
-      leaderLine.setLatLngs([circleDot.getLatLng(), labelMarker.getLatLng()]);
-    });
-    circleDot.on('dragend', function() {
-      const newPos = circleDot.getLatLng();
-      updateSpotCoord(spot, newPos.lat, newPos.lng);
+    const infoWindow = new naver.maps.InfoWindow({
+      content: `
+        <div style="padding:10px; font-size:12px; line-height:1.5; font-family:'Malgun Gothic',sans-serif; min-width:180px;">
+          <b style="color:${spot.color}; font-size:13px;">[${spot.type}] ${spot.label}</b><br>${spot.desc}<br>
+          <a href="${naverMapUrl}" target="_blank" style="display:inline-block; margin-top:6px; color:#03c75a; font-weight:bold; font-size:11px; text-decoration:none;">🇳 네이버 지도 바로가기 &rarr;</a>
+        </div>
+      `,
+      borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8
     });
 
-    labelMarker.on('drag', function() {
-      leaderLine.setLatLngs([circleDot.getLatLng(), labelMarker.getLatLng()]);
+    naver.maps.Event.addListener(circleDot, 'click', function() {
+      if(infoWindow.getMap()) infoWindow.close();
+      else infoWindow.open(naverMapObj, circleDot);
     });
-    labelMarker.on('dragend', function() {
-      const finalPos = labelMarker.getLatLng();
-      updateLabelCoord(spot, finalPos.lat, finalPos.lng);
+    naver.maps.Event.addListener(labelMarker, 'click', function() {
+      if(infoWindow.getMap()) infoWindow.close();
+      else infoWindow.open(naverMapObj, labelMarker);
     });
-
-    currentLayers.push(labelMarker);
 
     if(spot.type === '숙소') {
       const btn = document.createElement("a");
@@ -1286,8 +1124,8 @@ window.loadVersion = async function(versionName) {
   try {
     const docSnap = await getDoc(doc(db, "tripVersions", versionName));
     if (docSnap.exists()) {
-      tripData = docSnap.data().data;
-      await saveAll(); // 메인에 반영
+      tripData = updateCoordsFromAddress(docSnap.data().data);
+      await saveAll();
       alert(`'${versionName}' 버전을 불러왔습니다!`);
       window.closeVersionModal();
     } else {
@@ -1484,31 +1322,28 @@ function renderHotelEditList() {
 }
 
 window.addHotelInput = function() {
-  tripData.hotels.push({ name: "새 숙소", nights: "1박", address: "제주시", lat: 33.5, lng: 126.5 });
+  tripData.hotels.push({ name: "새 숙소", nights: "1박", address: "제주시" });
+  tripData = updateCoordsFromAddress(tripData);
   renderHotelEditList();
-};
-
-window.updateHotel = async function(idx, field, val) {
-  tripData.hotels[idx][field] = val;
-  if(field === 'name' || field === 'address') {
-    const coords = await geocodeAddress(val, tripData);
-    tripData.hotels[idx].lat = coords.lat;
-    tripData.hotels[idx].lng = coords.lng;
-  }
   saveAll();
 };
 
-window.updateHotelAddress = async function(idx, val) {
+window.updateHotel = function(idx, field, val) {
+  tripData.hotels[idx][field] = val;
+  tripData = updateCoordsFromAddress(tripData);
+  saveAll();
+};
+
+window.updateHotelAddress = function(idx, val) {
   tripData.hotels[idx].address = val;
-  const coords = await geocodeAddress(val + ' ' + tripData.hotels[idx].name, tripData);
-  tripData.hotels[idx].lat = coords.lat;
-  tripData.hotels[idx].lng = coords.lng;
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
 window.removeHotel = function(idx) {
   tripData.hotels.splice(idx, 1);
   renderHotelEditList();
+  saveAll();
 };
 
 window.saveInfo = function() {
@@ -1521,7 +1356,8 @@ window.saveInfo = function() {
 };
 
 window.addDaySection = function() {
-  tripData.days.push({ date: "새로운 날짜", items: [{ time: "12:00", text: "새 일정", address: "제주공항", lat: 33.5066, lng: 126.4931, checked: true }] });
+  tripData.days.push({ date: "새로운 날짜", items: [{ time: "12:00", text: "새 일정", address: "제주공항", checked: true }] });
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
@@ -1538,12 +1374,14 @@ window.updateDayDate = function(dIdx, val) {
 };
 
 window.addDayItem = function(dIdx) {
-  tripData.days[dIdx].items.push({ time: "12:00", text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
+  tripData.days[dIdx].items.push({ time: "12:00", text: "새 일정", address: "제주 명소", checked: true });
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
 window.addDayItemBefore = function(dIdx, iIdx) {
-  tripData.days[dIdx].items.splice(iIdx, 0, { time: "12:00", text: "새 일정", address: "제주 명소", lat: 33.5, lng: 126.5, checked: true });
+  tripData.days[dIdx].items.splice(iIdx, 0, { time: "12:00", text: "새 일정", address: "제주 명소", checked: true });
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
@@ -1557,23 +1395,15 @@ window.updateItemTime = function(dIdx, iIdx, val) {
   saveAll();
 };
 
-window.updateItemText = async function(dIdx, iIdx, val) {
+window.updateItemText = function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].text = val;
-  const coords = await geocodeAddress(val + ' ' + (tripData.days[dIdx].items[iIdx].address || ''), tripData);
-  if (coords) {
-    tripData.days[dIdx].items[iIdx].lat = coords.lat;
-    tripData.days[dIdx].items[iIdx].lng = coords.lng;
-  }
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
-window.updateItemAddress = async function(dIdx, iIdx, val) {
+window.updateItemAddress = function(dIdx, iIdx, val) {
   tripData.days[dIdx].items[iIdx].address = val;
-  const coords = await geocodeAddress(val + ' ' + tripData.days[dIdx].items[iIdx].text, tripData);
-  if (coords) {
-    tripData.days[dIdx].items[iIdx].lat = coords.lat;
-    tripData.days[dIdx].items[iIdx].lng = coords.lng;
-  }
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
@@ -1582,28 +1412,22 @@ window.toggleItemCheck = function(dIdx, iIdx) {
   saveAll();
 };
 
-window.addPlaceItem = async function(type) {
+window.addPlaceItem = function(type) {
   const name = prompt(type === 'restaurant' ? "추가할 맛집 이름" : "추가할 카페 이름");
   if(!name) return;
-  const coords = await geocodeAddress(name, tripData);
   if(type === 'restaurant') {
-    tripData.restaurants.push({ name, address: name, lat: coords.lat, lng: coords.lng });
+    tripData.restaurants.push({ name, address: name });
   } else {
-    tripData.cafes.push({ name, address: name, lat: coords.lat, lng: coords.lng });
+    tripData.cafes.push({ name, address: name });
   }
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
-window.updatePlace = async function(type, idx, field, val) {
+window.updatePlace = function(type, idx, field, val) {
   const list = type === 'restaurant' ? tripData.restaurants : tripData.cafes;
   list[idx][field] = val;
-  if(field === 'name' || field === 'address') {
-    const coords = await geocodeAddress(list[idx].name + ' ' + (list[idx].address || ''), tripData);
-    if(coords) {
-      list[idx].lat = coords.lat;
-      list[idx].lng = coords.lng;
-    }
-  }
+  tripData = updateCoordsFromAddress(tripData);
   saveAll();
 };
 
@@ -1680,7 +1504,7 @@ window.removeMemo = function(idx) {
   saveAll();
 };
 
-// --- 앱 초기화 및 실시간 리스너 바인딩 (데이터 100% 안전 유지) ---
+// --- 앱 초기화 및 실시간 리스너 바인딩 ---
 function initApp() {
   onSnapshot(tripDocRef, async (snapshot) => {
     if (snapshot.exists()) {
@@ -1699,15 +1523,16 @@ function initApp() {
             }
           });
         });
-        tripData = remoteData;
+        tripData = updateCoordsFromAddress(remoteData);
       } else {
-        tripData = defaultTripData;
-        await setDoc(tripDocRef, defaultTripData);
+        tripData = updateCoordsFromAddress(defaultTripData);
+        await setDoc(tripDocRef, tripData);
       }
       renderAll();
     } else {
-      await setDoc(tripDocRef, defaultTripData);
-      tripData = defaultTripData;
+      const initialData = updateCoordsFromAddress(defaultTripData);
+      await setDoc(tripDocRef, initialData);
+      tripData = initialData;
       renderAll();
     }
   }, (error) => {
